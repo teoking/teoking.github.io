@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Kotlin Coroutine in Action - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="这篇文章是我对团队内的一次技术分享 Outline What is Kotlin Coroutine? 协程什么？解决了什么问题？ 协程概念核心点：函数或一段程序能够被挂起，稍后再在挂起的位置恢复。 与线" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/kotlin_coroutine_in_action/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Kotlin Coroutine in Action" />
+<meta property="og:description" content="这篇文章是我对团队内的一次技术分享 Outline What is Kotlin Coroutine? 协程什么？解决了什么问题？ 协程概念核心点：函数或一段程序能够被挂起，稍后再在挂起的位置恢复。 与线" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/kotlin_coroutine_in_action/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-06T17:46:28+08:00" />
+<meta property="article:modified_time" content="2021-05-06T17:46:28+08:00" />
+
+<meta itemprop="name" content="Kotlin Coroutine in Action">
+<meta itemprop="description" content="这篇文章是我对团队内的一次技术分享 Outline What is Kotlin Coroutine? 协程什么？解决了什么问题？ 协程概念核心点：函数或一段程序能够被挂起，稍后再在挂起的位置恢复。 与线"><meta itemprop="datePublished" content="2021-05-06T17:46:28+08:00" />
+<meta itemprop="dateModified" content="2021-05-06T17:46:28+08:00" />
+<meta itemprop="wordCount" content="1827">
+<meta itemprop="keywords" content="Kotlin Coroutine," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Kotlin Coroutine in Action"/>
+<meta name="twitter:description" content="这篇文章是我对团队内的一次技术分享 Outline What is Kotlin Coroutine? 协程什么？解决了什么问题？ 协程概念核心点：函数或一段程序能够被挂起，稍后再在挂起的位置恢复。 与线"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Kotlin Coroutine in Action</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-06 </span>
+        <div class="post-category">
+            <a href="/categories/threading/"> Threading </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#what-is-kotlin-coroutine">What is Kotlin Coroutine?</a></li>
+    <li><a href="#coroutine-basis">Coroutine Basis</a>
+      <ul>
+        <li><a href="#函数的挂起">函数的挂起</a></li>
+        <li><a href="#挂起点">挂起点</a></li>
+        <li><a href="#协程上下文">协程上下文</a></li>
+        <li><a href="#协程的拦截器">*协程的拦截器</a></li>
+      </ul>
+    </li>
+    <li><a href="#coroutine-framework">Coroutine Framework</a></li>
+    <li><a href="#coroutine-in-action">Coroutine in Action</a>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#coroutinescope">CoroutineScope</a></li>
+            <li><a href="#job">Job</a></li>
+            <li><a href="#deffered">Deffered</a></li>
+            <li><a href="#flow">Flow</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#coroutine-with-x">Coroutine with X</a></li>
+    <li><a href="#coroutine-faq">Coroutine FAQ</a></li>
+    <li><a href="#links">Links</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <blockquote>
+<p>这篇文章是我对团队内的一次技术分享</p>
+</blockquote>
+<p>Outline</p>
+<h1 id="what-is-kotlin-coroutine">What is Kotlin Coroutine?</h1>
+<blockquote>
+<p>协程什么？解决了什么问题？</p>
+</blockquote>
+<p>协程概念核心点：函数或一段程序能够被挂起，稍后再在挂起的位置恢复。</p>
+<p>与线程的区别：</p>
+<ul>
+<li>从任务的角度来看，线程一旦开始执行就不会暂停，直到任务结束，这个过程是连续的</li>
+<li>线程之间是抢占式的调度，不存在协作问题</li>
+</ul>
+<p>协程目前还没有统一的标准。</p>
+<p>Kotlin Coroutine由JetBrains Kotlin团队开发，谷歌目前在大力推广。</p>
+<p><strong>异步API</strong></p>
+<ul>
+<li>Future (JDK 1.5+), CompletableFuture(JDK 1.8+)</li>
+<li>Promise与async/await (ES7, C# 5.0, Python 3.5, Rust 1.39.0)</li>
+<li>Reactive Programming - Rx*</li>
+<li>Kotlin coroutine</li>
+<li>Java Loom (*proposal阶段，还没发布)</li>
+<li>Coroutine (C++ 20)</li>
+</ul>
+<h1 id="coroutine-basis">Coroutine Basis</h1>
+<blockquote>
+<p>协程基础</p>
+</blockquote>
+<h2 id="函数的挂起">函数的挂起</h2>
+<p>挂起函数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">suspend</span> <span class="k">fun</span> <span class="nf">suspendFunc</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// do something
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 当上述函数编译后，编译期会给生成一个匿名内部类，这个类就是Continuation的实现
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>为什么挂起函数可以调用普通函数，反过来却不行？</p>
+<h2 id="挂起点">挂起点</h2>
+<p>协程体本身就是一个Continuation实例，在其内部挂起函数的调用处被称为挂起点，直到Continuation的resume函数被调用才会恢复执行。</p>
+<p><img src="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/ed8a9fd8-cadc-4b68-afac-07d6e23b417a/Untitled.png" alt="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/ed8a9fd8-cadc-4b68-afac-07d6e23b417a/Untitled.png"></p>
+<p>挂起函数就是普通函数的参数中多了一个Continuation实例</p>
+<h2 id="协程上下文">协程上下文</h2>
+<p>定义一个协程的行为数据，其元素包括：</p>
+<ul>
+<li>Job</li>
+<li>CoroutineDispatcher</li>
+<li>CoroutineName</li>
+<li>CoroutineExceptionHandler</li>
+</ul>
+<h2 id="协程的拦截器">*协程的拦截器</h2>
+<p>允许我们拦截协程异步回调时的恢复调用(resume)</p>
+<h1 id="coroutine-framework">Coroutine Framework</h1>
+<blockquote>
+<p>协程框架</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="n">implementation</span><span class="p">(</span><span class="s2">&#34;org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">implementation</span><span class="p">(</span><span class="err">&#39;</span><span class="n">org</span><span class="p">.</span><span class="n">jetbrains</span><span class="p">.</span><span class="n">kotlinx</span><span class="p">:</span><span class="n">kotlinx</span><span class="p">-</span><span class="n">coroutines</span><span class="p">-</span><span class="n">android</span><span class="p">:</span><span class="m">1.4</span><span class="p">.</span><span class="m">3</span><span class="err">&#39;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>*Kotlin语言内建对Coroutine的支持. kotlinx-coroutines-core是官方实现的协程框架</p>
+<p><img src="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a28d7482-9263-47c5-871c-d11700da9efb/Untitled.png" alt="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a28d7482-9263-47c5-871c-d11700da9efb/Untitled.png"></p>
+<h1 id="coroutine-in-action">Coroutine in Action</h1>
+<blockquote>
+<p>协程如何使用</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">suspend</span> <span class="k">fun</span> <span class="nf">fetchDocs</span><span class="p">()</span> <span class="p">{</span>                             <span class="c1">// Dispatchers.Main
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">val</span> <span class="py">result</span> <span class="p">=</span> <span class="k">get</span><span class="p">(</span><span class="s2">&#34;https://developer.android.com&#34;</span><span class="p">)</span> <span class="c1">// Dispatchers.IO for `get`
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">show</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>                                      <span class="c1">// Dispatchers.Main
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">suspend</span> <span class="k">fun</span> <span class="nf">get</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="n">String</span><span class="p">)</span> <span class="p">=</span> <span class="n">withContext</span><span class="p">(</span><span class="n">Dispatchers</span><span class="p">.</span><span class="n">IO</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="coroutinescope">CoroutineScope</h3>
+<p>一个scope会跟踪通过它launch/async的所有协程，这些协程会在调用scope.cancel()后被取消。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">ExampleClass</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Job and Dispatcher are combined into a CoroutineContext which
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// will be discussed shortly
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">val</span> <span class="py">scope</span> <span class="p">=</span> <span class="n">CoroutineScope</span><span class="p">(</span><span class="n">Job</span><span class="p">()</span> <span class="p">+</span> <span class="n">Dispatchers</span><span class="p">.</span><span class="n">Main</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">exampleMethod</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Starts a new coroutine within the scope
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">scope</span><span class="p">.</span><span class="n">launch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// New coroutine that can call suspend functions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">fetchDocs</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">cleanUp</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Cancel the scope to cancel ongoing coroutines work
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">scope</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="job">Job</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">ExampleClass</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">..</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">exampleMethod</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Handle to the coroutine, you can control its lifecycle
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">val</span> <span class="py">job</span> <span class="p">=</span> <span class="n">scope</span><span class="p">.</span><span class="n">launch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// New coroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">..</span><span class="p">.)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// Cancel the coroutine started above, this doesn&#39;t affect the scope
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// this coroutine was launched in
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">job</span><span class="p">.</span><span class="n">cancel</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="deffered">Deffered</h3>
+<p>Deffered是一个带结果的Job，类似于Java中的Future</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">suspend</span> <span class="k">fun</span> <span class="nf">loadAndCombine</span><span class="p">(</span><span class="n">name1</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span> <span class="n">name2</span><span class="p">:</span> <span class="n">String</span><span class="p">):</span> <span class="n">Image</span> <span class="p">=</span>
+</span></span><span class="line"><span class="cl">    <span class="n">coroutineScope</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">deferred1</span> <span class="p">=</span> <span class="n">async</span> <span class="p">{</span> <span class="n">loadImage</span><span class="p">(</span><span class="n">name1</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">deferred2</span> <span class="p">=</span> <span class="n">async</span> <span class="p">{</span> <span class="n">loadImage</span><span class="p">(</span><span class="n">name2</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">combineImages</span><span class="p">(</span><span class="n">deferred1</span><span class="p">.</span><span class="n">await</span><span class="p">(),</span> <span class="n">deferred2</span><span class="p">.</span><span class="n">await</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="flow">Flow</h3>
+<p>顺序地emit多个值</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">NewsRemoteDataSource</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">val</span> <span class="py">newsApi</span><span class="p">:</span> <span class="n">NewsApi</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">val</span> <span class="py">refreshIntervalMs</span><span class="p">:</span> <span class="n">Long</span> <span class="p">=</span> <span class="m">5000</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">latestNews</span><span class="p">:</span> <span class="n">Flow</span><span class="p">&lt;</span><span class="n">List</span><span class="p">&lt;</span><span class="n">ArticleHeadline</span><span class="p">&gt;&gt;</span> <span class="p">=</span> <span class="n">flow</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">while</span><span class="p">(</span><span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">latestNews</span> <span class="p">=</span> <span class="n">newsApi</span><span class="p">.</span><span class="n">fetchLatestNews</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="n">emit</span><span class="p">(</span><span class="n">latestNews</span><span class="p">)</span> <span class="c1">// Emits the result of the request to the flow
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">delay</span><span class="p">(</span><span class="n">refreshIntervalMs</span><span class="p">)</span> <span class="c1">// Suspends the coroutine for some time
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Interface that provides a way to make network requests with suspend functions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">interface</span> <span class="nc">NewsApi</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">suspend</span> <span class="k">fun</span> <span class="nf">fetchLatestNews</span><span class="p">():</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">ArticleHeadline</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="coroutine-with-x">Coroutine with X</h1>
+<blockquote>
+<p>组合用法</p>
+</blockquote>
+<p>Coroutine + ViewModel</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// DO create coroutines in the ViewModel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">class</span> <span class="nc">LatestNewsViewModel</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">val</span> <span class="py">getLatestNewsWithAuthors</span><span class="p">:</span> <span class="n">GetLatestNewsWithAuthorsUseCase</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="p">:</span> <span class="n">ViewModel</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">val</span> <span class="py">_uiState</span> <span class="p">=</span> <span class="n">MutableStateFlow</span><span class="p">&lt;</span><span class="n">LatestNewsUiState</span><span class="p">&gt;(</span><span class="n">LatestNewsUiState</span><span class="p">.</span><span class="n">Loading</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">uiState</span><span class="p">:</span> <span class="n">StateFlow</span><span class="p">&lt;</span><span class="n">LatestNewsUiState</span><span class="p">&gt;</span> <span class="p">=</span> <span class="n">_uiState</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">loadNews</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">viewModelScope</span><span class="p">.</span><span class="n">launch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">latestNewsWithAuthors</span> <span class="p">=</span> <span class="n">getLatestNewsWithAuthors</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="n">_uiState</span><span class="p">.</span><span class="n">value</span> <span class="p">=</span> <span class="n">LatestNewsUiState</span><span class="p">.</span><span class="n">Success</span><span class="p">(</span><span class="n">latestNewsWithAuthors</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Activity</span><span class="p">:</span> <span class="n">AppCompact</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		
+</span></span><span class="line"><span class="cl">		<span class="nd">@override</span> <span class="k">fun</span> <span class="nf">onCreate</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">Bundle</span><span class="p">?)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="n">viewModel</span><span class="p">.</span><span class="n">loadNews</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Coroutine + Retrofit</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// Java
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nd">@Headers</span><span class="p">(</span><span class="s2">&#34;Accept: &#34;</span> <span class="p">+</span> <span class="n">Constants</span><span class="p">.</span><span class="n">MIME_TYPE_JSON</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@GET</span><span class="p">(</span><span class="s2">&#34;/v1/pay/joyme/order&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">Deferred</span><span class="p">&lt;</span><span class="n">JmPayOrderResp</span><span class="p">&gt;</span> <span class="n">queryOrConsumePayOrder</span><span class="p">(</span><span class="nd">@QueryMap</span> <span class="n">Map</span><span class="p">&lt;</span><span class="n">String</span><span class="p">,</span> <span class="n">String</span><span class="p">&gt;</span> <span class="n">queryMap</span><span class="p">,</span> <span class="nd">@HeaderMap</span> <span class="n">Map</span><span class="p">&lt;</span><span class="n">String</span><span class="p">,</span> <span class="n">String</span><span class="p">&gt;</span> <span class="n">headers</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Kotlin
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">apiService</span><span class="p">.</span><span class="n">consumePayOrder</span><span class="p">(</span><span class="n">prepayId</span><span class="p">,</span> <span class="n">orderId</span><span class="p">,</span> <span class="n">token</span><span class="p">).</span><span class="n">await</span><span class="p">()</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>coil</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// URL
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">imageView</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&#34;https://www.example.com/image.jpg&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">inline</span> <span class="k">fun</span> <span class="nf">ImageView</span><span class="p">.</span><span class="n">load</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uri</span><span class="p">:</span> <span class="n">String</span><span class="p">?,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">imageLoader</span><span class="p">:</span> <span class="n">ImageLoader</span> <span class="p">=</span> <span class="n">Coil</span><span class="p">.</span><span class="n">loader</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">builder</span><span class="p">:</span> <span class="n">LoadRequestBuilder</span><span class="p">.()</span> <span class="o">-&gt;</span> <span class="n">Unit</span> <span class="p">=</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="p">):</span> <span class="n">RequestDisposable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">imageLoader</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">uri</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">target</span><span class="p">(</span><span class="k">this</span><span class="nd">@load</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">builder</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">override</span> <span class="k">fun</span> <span class="nf">load</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">LoadRequest</span><span class="p">):</span> <span class="n">RequestDisposable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// Start loading the data.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="k">val</span> <span class="py">job</span> <span class="p">=</span> <span class="n">loaderScope</span><span class="p">.</span><span class="n">launch</span><span class="p">(</span><span class="n">exceptionHandler</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="n">execute</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="k">data</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="k">if</span> <span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">target</span> <span class="k">is</span> <span class="n">ViewTarget</span><span class="p">&lt;*&gt;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="k">val</span> <span class="py">requestId</span> <span class="p">=</span> <span class="n">request</span><span class="p">.</span><span class="n">target</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">requestManager</span><span class="p">.</span><span class="n">setCurrentRequestJob</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">          <span class="n">ViewTargetRequestDisposable</span><span class="p">(</span><span class="n">requestId</span><span class="p">,</span> <span class="n">request</span><span class="p">.</span><span class="n">target</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="n">BaseTargetRequestDisposable</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="coroutine-faq">Coroutine FAQ</h1>
+<p>未捕获异常导致的崩溃，堆栈信息不明确</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">2021-03-04 17:37:36.900 30913-31001/? E/AndroidRuntime: FATAL EXCEPTION: DefaultDispatcher-worker-1
+</span></span><span class="line"><span class="cl">    Process: com.teoking.mypkg, PID: 30913
+</span></span><span class="line"><span class="cl">    java.net.ConnectException: Failed to connect to /10.61.160.64:8888
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.RealConnection.connectSocket(RealConnection.java:248)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.RealConnection.connect(RealConnection.java:166)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.findConnection(StreamAllocation.java:257)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.findHealthyConnection(StreamAllocation.java:135)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.newStream(StreamAllocation.java:114)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.ConnectInterceptor.intercept(ConnectInterceptor.java:42)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.cache.CacheInterceptor.intercept(CacheInterceptor.java:93)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.BridgeInterceptor.intercept(BridgeInterceptor.java:93)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.java:126)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+</span></span><span class="line"><span class="cl">        at com.photoedit.app.iab.IabAuthInterceptor.intercept(IabAuthInterceptor.java:52)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121)
+</span></span><span class="line"><span class="cl">        at okhttp3.RealCall.getResponseWithInterceptorChain(RealCall.java:254)
+</span></span><span class="line"><span class="cl">        at okhttp3.RealCall$AsyncCall.execute(RealCall.java:200)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+</span></span><span class="line"><span class="cl">        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+</span></span><span class="line"><span class="cl">        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+</span></span><span class="line"><span class="cl">        at java.lang.Thread.run(Thread.java:929)
+</span></span><span class="line"><span class="cl">     Caused by: java.net.ConnectException: failed to connect to /10.61.160.64 (port 8888) from /:: (port 0) after 10000ms: connect failed: ENETUNREACH (Network is unreachable)
+</span></span><span class="line"><span class="cl">        at libcore.io.IoBridge.connect(IoBridge.java:143)
+</span></span><span class="line"><span class="cl">        at java.net.PlainSocketImpl.socketConnect(PlainSocketImpl.java:142)
+</span></span><span class="line"><span class="cl">        at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:390)
+</span></span><span class="line"><span class="cl">        at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:230)
+</span></span><span class="line"><span class="cl">        at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:212)
+</span></span><span class="line"><span class="cl">        at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:436)
+</span></span><span class="line"><span class="cl">        at java.net.Socket.connect(Socket.java:621)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.platform.AndroidPlatform.connectSocket(AndroidPlatform.java:73)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.RealConnection.connectSocket(RealConnection.java:246)
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.RealConnection.connect(RealConnection.java:166) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.findConnection(StreamAllocation.java:257) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.findHealthyConnection(StreamAllocation.java:135) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.newStream(StreamAllocation.java:114) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.ConnectInterceptor.intercept(ConnectInterceptor.java:42) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.cache.CacheInterceptor.intercept(CacheInterceptor.java:93) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.BridgeInterceptor.intercept(BridgeInterceptor.java:93) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.java:126) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121) 
+</span></span><span class="line"><span class="cl">        at com.photoedit.app.iab.IabAuthInterceptor.intercept(IabAuthInterceptor.java:52) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121) 
+</span></span><span class="line"><span class="cl">        at okhttp3.RealCall.getResponseWithInterceptorChain(RealCall.java:254) 
+</span></span><span class="line"><span class="cl">        at okhttp3.RealCall$AsyncCall.execute(RealCall.java:200) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32) 
+</span></span><span class="line"><span class="cl">        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167) 
+</span></span><span class="line"><span class="cl">        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641) 
+</span></span><span class="line"><span class="cl">        at java.lang.Thread.run(Thread.java:929) 
+</span></span><span class="line"><span class="cl">     Caused by: android.system.ErrnoException: connect failed: ENETUNREACH (Network is unreachable)
+</span></span><span class="line"><span class="cl">        at libcore.io.Linux.connect(Native Method)
+</span></span><span class="line"><span class="cl">        at libcore.io.ForwardingOs.connect(ForwardingOs.java:95)
+</span></span><span class="line"><span class="cl">        at libcore.io.BlockGuardOs.connect(BlockGuardOs.java:136)
+</span></span><span class="line"><span class="cl">        at libcore.io.ForwardingOs.connect(ForwardingOs.java:95)
+</span></span><span class="line"><span class="cl">        at libcore.io.IoBridge.connectErrno(IoBridge.java:174)
+</span></span><span class="line"><span class="cl">        at libcore.io.IoBridge.connect(IoBridge.java:135)
+</span></span><span class="line"><span class="cl">        at java.net.PlainSocketImpl.socketConnect(PlainSocketImpl.java:142) 
+</span></span><span class="line"><span class="cl">        at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:390) 
+</span></span><span class="line"><span class="cl">        at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:230) 
+</span></span><span class="line"><span class="cl">        at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:212) 
+</span></span><span class="line"><span class="cl">        at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:436) 
+</span></span><span class="line"><span class="cl">        at java.net.Socket.connect(Socket.java:621) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.platform.AndroidPlatform.connectSocket(AndroidPlatform.java:73) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.RealConnection.connectSocket(RealConnection.java:246) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.RealConnection.connect(RealConnection.java:166) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.findConnection(StreamAllocation.java:257) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.findHealthyConnection(StreamAllocation.java:135) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.StreamAllocation.newStream(StreamAllocation.java:114) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.connection.ConnectInterceptor.intercept(ConnectInterceptor.java:42) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.cache.CacheInterceptor.intercept(CacheInterceptor.java:93) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.BridgeInterceptor.intercept(BridgeInterceptor.java:93) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.java:126) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121) 
+</span></span><span class="line"><span class="cl">        at com.photoedit.app.iab.IabAuthInterceptor.intercept(IabAuthInterceptor.java:52) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:147) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.java:121) 
+</span></span><span class="line"><span class="cl">        at okhttp3.RealCall.getResponseWithInterceptorChain(RealCall.java:254) 
+</span></span><span class="line"><span class="cl">        at okhttp3.RealCall$AsyncCall.execute(RealCall.java:200) 
+</span></span><span class="line"><span class="cl">        at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32) 
+</span></span><span class="line"><span class="cl">        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167) 
+</span></span><span class="line"><span class="cl">        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641) 
+</span></span><span class="line"><span class="cl">        at java.lang.Thread.run(Thread.java:929) 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>修复方法时准确捕获coroutine中可能出现的异常。</p>
+<h1 id="links">Links</h1>
+<ol>
+<li><a href="https://book.douban.com/subject/35094136/">《深入理解Kotlin协程》</a> by 霍丙乾 - 这本书主要介绍协程的实现原理</li>
+<li><a href="https://blog.danlew.net/2021/01/28/rxjava-vs-coroutines/">RxJava vs. Coroutines</a> by DAN LEW from Trello - 协程和RxJava的比较</li>
+<li><a href="https://elizarov.medium.com/">Kotlin Coroutine TL blog</a> - Roman Elizarov</li>
+<li><a href="https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md">Kotlin Coroutine Design proposal</a> - 协程的设计文档</li>
+<li><a href="https://developer.android.com/kotlin/coroutines">Kotlin coroutines on Android</a> 这些列文章可以说是必读</li>
+<li><a href="https://developer.android.com/kotlin/flow">Kotlin flows on Android</a></li>
+<li><a href="https://coil-kt.github.io/coil/migrating/">Coil Migrating from Glide/Picasso</a> - 几种图像库API的比较，性能比较可以看这一篇<a href="https://proandroiddev.com/coil-vs-picasso-vs-glide-get-ready-go-774add8cfd40">coil vs picasso vs glide</a></li>
+<li><a href="https://en.cppreference.com/w/cpp/language/coroutines">CPP 20 Coroutine (Draft)</a> - API设计有点像Promise风格</li>
+<li><a href="https://en.wikipedia.org/wiki/Continuation-passing_style">Continuation-passing style</a> - Kotlin Coroutine实际上编译器对suspend函数进行CPS变换，使得continuation对象可以不断向下传递来实现异步调用流程</li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-06
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/kotlin-coroutine/">Kotlin Coroutine</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/draw_round_corner_3ways_in_android/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Android中绘制圆角的三种方式</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/implement_an_gles_renderer_in_android/">
+            <span class="next-text nav-default">Android GLES基础：从TextRender看Renderer实现</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

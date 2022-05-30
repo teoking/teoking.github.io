@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>VectorDrawable on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/vectordrawable/</link>
+    <description>Recent content in VectorDrawable on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 06 May 2021 19:05:47 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/vectordrawable/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Android VectorDrawable系列文章Review</title>
+      <link>https://teoking.github.io/post/android_vectordrawable_guides_notes/</link>
+      <pubDate>Thu, 06 May 2021 19:05:47 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/android_vectordrawable_guides_notes/</guid>
+      <description>该系列文章作者是Android团队的Nick Butcher： Understanding Android’s vector image format: VectorDrawable Draw a Path: Rendering Android VectorDrawables Using vector assets in Android apps Vector Assets - Android Conference Talks Vector Drawabl</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Frame Render on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/frame-render/</link>
+    <description>Recent content in Frame Render on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Fri, 14 May 2021 14:47:46 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/frame-render/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Android渲染Part1:  帧渲染</title>
+      <link>https://teoking.github.io/post/android_render_part1/</link>
+      <pubDate>Fri, 14 May 2021 14:47:46 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/android_render_part1/</guid>
+      <description>这篇文章是Chet Haase和Romain Guy做的&amp;lt;Drawn out: How Android renders (Google I/O &amp;lsquo;18)&amp;gt;演讲的翻译。由于内容较多分为两</description>
+    </item>
+    
+  </channel>
+</rss>

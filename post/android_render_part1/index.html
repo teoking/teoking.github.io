@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Android渲染Part1:  帧渲染 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="这篇文章是Chet Haase和Romain Guy做的&amp;lt;Drawn out: How Android renders (Google I/O &amp;lsquo;18)&amp;gt;演讲的翻译。由于内容较多分为两" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/android_render_part1/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Android渲染Part1:  帧渲染" />
+<meta property="og:description" content="这篇文章是Chet Haase和Romain Guy做的&lt;Drawn out: How Android renders (Google I/O &lsquo;18)&gt;演讲的翻译。由于内容较多分为两" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/android_render_part1/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-14T14:47:46+08:00" />
+<meta property="article:modified_time" content="2021-05-14T14:47:46+08:00" />
+
+<meta itemprop="name" content="Android渲染Part1:  帧渲染">
+<meta itemprop="description" content="这篇文章是Chet Haase和Romain Guy做的&lt;Drawn out: How Android renders (Google I/O &lsquo;18)&gt;演讲的翻译。由于内容较多分为两"><meta itemprop="datePublished" content="2021-05-14T14:47:46+08:00" />
+<meta itemprop="dateModified" content="2021-05-14T14:47:46+08:00" />
+<meta itemprop="wordCount" content="5156">
+<meta itemprop="keywords" content="Android,Frame Render," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Android渲染Part1:  帧渲染"/>
+<meta name="twitter:description" content="这篇文章是Chet Haase和Romain Guy做的&lt;Drawn out: How Android renders (Google I/O &lsquo;18)&gt;演讲的翻译。由于内容较多分为两"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Android渲染Part1:  帧渲染</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-14 </span>
+        <div class="post-category">
+            <a href="/categories/ui/"> UI </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#文中涉及到的概念">文中涉及到的概念</a></li>
+    <li><a href="#android帧渲染过程">Android帧渲染过程</a>
+      <ul>
+        <li><a href="#简单示例列表item-click过程讲解">简单示例：列表Item Click过程讲解</a></li>
+        <li><a href="#复杂示例列表滑动">复杂示例：列表滑动</a>
+          <ul>
+            <li><a href="#阶段一列表元素仅发生移动">阶段一：列表元素仅发生移动</a></li>
+            <li><a href="#阶段二新元素出现">阶段二：新元素出现</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#refference">Refference</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <blockquote>
+<p>这篇文章是Chet Haase和Romain Guy做的&lt;Drawn out: How Android renders (Google I/O &lsquo;18)&gt;演讲的翻译。由于内容较多分为两部分，第一部分主要讲Android UI中每一帧的渲染过程；第二部分讲Window的合成过程。</p>
+</blockquote>
+<p>这系列文章并不包含如何优化UI的内容。这系列文章可以解答诸如以下问题：</p>
+<ul>
+<li>什么是硬件加速？</li>
+<li>它为什么让UI流畅的关键技术？</li>
+<li>控件是怎么显示到屏幕上的？</li>
+<li>16ms里都做了什么事情？</li>
+<li>手机屏上为什么能同时显示系统栏、应用和虚拟按键？</li>
+</ul>
+<h1 id="文中涉及到的概念">文中涉及到的概念</h1>
+<ol>
+<li><strong>Rendering:</strong> Android: Turning a UI descripton into pixels on the screen.</li>
+<li><strong>DisplayList:</strong> An encapsulation of the rendering commands for a view.</li>
+<li><strong>Invalidation:</strong> The process of causing things to be redrawn.</li>
+<li><strong>Traversal</strong>: Performing all phases of rendering for a frame. 具体来说包括：measure, layout, draw</li>
+<li><strong>Render Thread:</strong> Thread responsible for issueing display list operations to GPU. 它是一个独立的线程，native代码实现，和Java代码、application代码没有关联，只和GPU通信。它可以pre-rendering（预渲染），生成DisplayList信息然后发送给GPU；除此之外，它还可以处理各种动画（如circular reveal animation，ripple animation，vector drawable animation）</li>
+<li><strong>Request Layout</strong>: The process of causing measure/layout to be scheduled. 它有点像invalidate，不过它请求的是重新measure和layout。</li>
+<li><strong>Measure</strong>: Asking views their preferred size.</li>
+<li><strong>Layout</strong>: Telling views their size and position.  views和它的parent会根据系统中所有的限制条件进行谈判。</li>
+</ol>
+<h1 id="android帧渲染过程">Android帧渲染过程</h1>
+<p><img src="./res/Untitled.png" alt="android_render_part1/Untitled.png"></p>
+<p>先整体看一下整个渲染管线：从收到vsync(Choreographer)开始，在UI Thread经过input处理，animations, measure, layout, draw后，将处理结果sync给RenderThread，再经过execute, get buffer, issue后，通过swap buffer将buffer交给Graphics，在这里完成composite后，这一帧UI就显示到了屏幕上。这张图是Android Rendering架构的一部分（注：只包含了软件部分）</p>
+<p>图中顶部不同颜色的点表示这一步骤在哪个进程完成。</p>
+<h2 id="简单示例列表item-click过程讲解">简单示例：列表Item Click过程讲解</h2>
+<p><img src="./res/Untitled%201.png" alt="android_render_part1/Untitled%201.png"></p>
+<p>下面通过一个例子来更好的理解这个渲染的过程。这个例子中只有一个RecyclerView，包含很多元素，当点击其中一个元素，其背景会随机变色。</p>
+<p><img src="./res/Untitled%202.png" alt="android_render_part1/Untitled%202.png"></p>
+<p>例子的布局文件实现也很简单。</p>
+<p><img src="./res/Untitled%203.png" alt="android_render_part1/Untitled%203.png"></p>
+<p>当demo显示在屏幕上时，其UI对应的view hierarchy如上图所示。圈出来的部分是Activity的内容区域，其余View都是应用无法影响到的。</p>
+<p><img src="./res/Untitled%204.png" alt="android_render_part1/Untitled%204.png"></p>
+<p>我们以列表中一次点击事件为例，具体地看一下这个过程。首先当用户点击RecyclerView中的一个item时，这时会触发一个VSync事件，Choreographer收到这个事件，通知UI Thread处理这个input事件。在Input事件的结果处理中，改变View的背景颜色，并调用invalidate()方法。</p>
+<p><img src="./res/Untitled%205.png" alt="android_render_part1/Untitled%205.png"></p>
+<p><code>invalidate()</code>的过程，是从发起invalidate的view开始，向上一级一级传播，最终到达root view也就是<code>DecorView</code>，再由<code>DecorView</code>告知<code>ViewRootImpl.java</code>去<code>scheduleTraversals()</code>。</p>
+<p><code>ViewRootImpl</code>是<code>View</code>和<code>WindowManager</code>之间的桥梁，实现了它们间交互需要的协议。</p>
+<p><img src="./res/Untitled%206.png" alt="android_render_part1/Untitled%206.png"></p>
+<p>由于在这个例子中，view大小和位置的没有变更，所以traversal只会触发draw()调用。到达DecorView时，DecorView实际上是没有变化的，所以它的DisplayList也没有变化，但它会获取子view的DisplayList来进行判断；就这样，draw从DecorView开始，自顶向下遍历至Item2，Item2它是知道自己发起过invalidate，所以它要进行重绘。就这样，getDisplayList在Item2这里终止，并调用该view的draw方法重新生成它自己的DisplayList。</p>
+<p><img src="./res/Untitled%207.png" alt="android_render_part1/Untitled%207.png"></p>
+<p>在draw方法里通过canvas画了一个矩形和一段文字，这些绘制代码最终会被转化进DisplayList中。</p>
+<p><img src="./res/Untitled%208.png" alt="android_render_part1/Untitled%208.png"></p>
+<p>draw调用完成后，就会得到更新后的完整的DisplayList（整个View Hierarchy的）</p>
+<p><img src="./res/Untitled%209.png" alt="android_render_part1/Untitled%209.png"></p>
+<p>下一个步骤是将DisplayList从Java层的UI Thread同步给native层的Render Thread。Render Thread收到DisplayList，并进行Damage Area计算和非硬件位图（non-HW Bitmap）的上传。</p>
+<p>Damage Area指的是需要重新绘制的区域，是通过边界判断算出来的。</p>
+<p>non-HW bitmaps这个指的是创建在Java层的bitmap，对应的HW bitmap指的是创建在GPU内存区域的bitmap。Android O以前的系统，bitmap都是non-HW的，它以后的系统引入了HW bitmap这个配置，可以直接在GPU内存中创建bitmap，同时Java层有一个对应的对象。non-HW bitmap在绘制时，需要将它拷贝到GPU内存，这样对于系统RAM而言，同一个这类bitmap就占有两份内存，并且开辟内从也是耗时操作。（这个优化听起来就效果很好，😀；但实际上使用起来有诸多限制，使用不当反倒性能不好）</p>
+<p><img src="./res/Untitled%2010.png" alt="android_render_part1/Untitled%2010.png"></p>
+<p>这张图展示了RenderThread在execute这一步所作的工作。它将DLOps进行一系列优化，如渲染类型（layers）、透明度（alpha）、重排（reordering）以及批量（batching）。</p>
+<p>当给view设置alpha，或者设置hardware layer时，系统会识别出和这些view或layer相关的draw指令，然后把它们移动到frame绘制的最前面。这样做可以避免GPU内部的状态切换，而这个切换是非常昂贵的。如果不做这个优化，就会出现严重的性能问题。出现这个问题的原因并不是因为GPU慢，而是因为GPU在等待CPU给它指令。（从上图可以看出，经过这一步优化，所有fill操作都移植Ops队列前面）</p>
+<p>再比如reordering and matching优化，它在重排后的DLOPs列表中找到那些相似的指令，然后进行匹配，再进行批量绘制。对于上面的例子，如果先画一个矩形，再画文字，如此反复，这样就会导致GPU的状态多次切换，状态切换是很昂贵的，它就会导致绘制的低效率。而通过这项优化技术，只要绘制命令不重叠，我们就可以一次绘制所有的矩形，然后一次绘制所有的文字。这就比前面的反复切换GPU状态的绘制高效很多。（从上图也可以看出这个优化结果）</p>
+<p>通过下面两个例子，能很直观的感受到这些优化带来的改进。</p>
+<p><img src="./res/gmail_honeycomb.gif" alt="android_render_part1/gmail_honeycomb.gif"></p>
+<p>这张图展示的是在honeycomb版本上放慢渲染管线看到的Gmail的绘制过程。可以看到，列表中绘制的元素和view hierarchy是对应的，绘制是按照代码顺序的（就是说最终绘制顺序和Canvas中的draw call顺序一致）。这种绘制机制非常低效。</p>
+<p><img src="./res/gmail_now.gif" alt="android_render_part1/gmail_now.gif"></p>
+<p>经过了batching、merging和reodering之后，就会得到上面的结果。可以看到星星、文字基本上一次性就绘制出来了。背景是逐个draw的，这说明reodering生效了，但batching是不生效的，因为列表中的元素有轻微的重叠，所以必须逐个绘制以实现blending，保证alpha值是正确的。</p>
+<p>从这个例子可以看出，最终的优化效果很取决于应用本身。举个例子，在Kitkat以后的setting应用，仅通过大约6个draw call就绘制出了整个界面，比之前少了非常多。</p>
+<p><img src="./res/Untitled%2011.png" alt="android_render_part1/Untitled%2011.png"></p>
+<p>从上面得知，需要绘制的部分称作Damage Area（需更新区域），它之外的部分是不要绘制的。当我们处理DLOps，就可以知道哪些绘制是在这个区域之外的，可以被丢弃。这个过程在计算机图形学中称作trivial reject。在Android中，同样的也会reject掉那些和damage area不相交的部分的DLOps。</p>
+<p><img src="./res/Untitled%2012.png" alt="android_render_part1/Untitled%2012.png"></p>
+<p>经过clipReject（裁剪）后，最终需要执行的DLOps只有三个：fill，draw text， draw line。</p>
+<p><img src="./res/Untitled%2013.png" alt="android_render_part1/Untitled%2013.png"></p>
+<p>下一步需要做的事情是GetBuffer（获取缓冲区）。当刚开始执行GPU操作时，GPU会返回给我们这个buffer（具体地说是SurfaceFlinger回传了这个buffer）。</p>
+<p><img src="./res/Untitled%2014.png" alt="android_render_part1/Untitled%2014.png"></p>
+<p>接着就是issue（发布）阶段。这一步是将DLOps转化为glCommand()，然后存进buffer里。</p>
+<p><img src="./res/Untitled%2015.png" alt="android_render_part1/Untitled%2015.png"></p>
+<p>接着进行Swap Buffer（交换缓冲区）。到达这一步表示已经完成了所有的render操作，已经准备好将这一帧显示在屏幕上。这里会请求SurfaceFlinger来swap buffer，让这个buffer位于最前面并将它显示到屏幕上。</p>
+<p><img src="./res/Untitled%2016.png" alt="android_render_part1/Untitled%2016.png"></p>
+<p>最后一步就是composite（合成）。屏幕上的各部分UI通过Hardware Compositor合成后输出给屏幕。（这一步是Render Thread执行swap buffer之后发生的，RT不需要等待在这里，合成是并行执行的）</p>
+<h2 id="复杂示例列表滑动">复杂示例：列表滑动</h2>
+<p><img src="./res/Untitled%2017.png" alt="android_render_part1/Untitled%2017.png"></p>
+<p>下面再看一个超复杂的例子：手指拖动向上划，所有列表元素都跟随滑动向上移动，同时新的列表元素出现。</p>
+<p>这个例子要分为两个阶段来观察。</p>
+<h3 id="阶段一列表元素仅发生移动">阶段一：列表元素仅发生移动</h3>
+<p><img src="./res/Untitled%2018.png" alt="android_render_part1/Untitled%2018.png"></p>
+<p>第一阶段是，现有元素只有移动，不出现新元素。</p>
+<p><img src="./res/Untitled%2019.png" alt="android_render_part1/Untitled%2019.png"></p>
+<p>第一步是处理down事件，这里会收到VSync事件，开始处理input事件。</p>
+<p><img src="./res/Untitled%2020.png" alt="android_render_part1/Untitled%2020.png"></p>
+<p>RecyclerView对于down事件的处理是只改变startx/y的值，并return，因此黄线标注的管线此时不会执行。</p>
+<p><img src="./res/Untitled%2021.png" alt="android_render_part1/Untitled%2021.png"></p>
+<p>当手指继续向上移动，RecyclerView就会收到move事件，因为在down事件中已经记录了最初的x/y，所以这里我们能知道移动了多少像素，计算出y轴偏移量，然后将RV中所有元素以这个y轴偏移量向上移动。</p>
+<p>在offsetTopAndBottom的方法中，使用invalidateViewProperty()方法来通知view属性的变更。这个方法是Honeycomb版本加入的，它优化对DisplayList属性变化的请求操作。DisplayList里面除了前面讲过的图形操作，还包括了view的核心显示属性（display properties），这些属性包括translation，rotation，alpha等，这些属性变化后我们不需要重新渲染view。只需要在DisplayList数据结构中修改，然后在GPU的issue阶段就会被使用。可以看出，这个方法大大加速了渲染过程，因为这里不再需要重新渲染整个view。</p>
+<p><img src="./res/Untitled%2022.png" alt="android_render_part1/Untitled%2022.png"></p>
+<p>invalidateViewProperties()会一级级向上传播，最终被ViewRootImpl处理。</p>
+<p><img src="./res/Untitled%2023.png" alt="android_render_part1/Untitled%2023.png"></p>
+<p>当ViewRootImpl处理traversal时，就会执行draw。</p>
+<p><img src="./res/Untitled%2024.png" alt="android_render_part1/Untitled%2024.png"></p>
+<p>这里的draw call不会改变DisplayList，只是更改了它内部的属性，所以这里可以立即sync给RenderThread。</p>
+<p><img src="./res/Untitled%2025.png" alt="android_render_part1/Untitled%2025.png"></p>
+<p>之后的流程就和前面是一样的了。</p>
+<h3 id="阶段二新元素出现">阶段二：新元素出现</h3>
+<p><img src="./res/Untitled%2026.png" alt="android_render_part1/Untitled%2026.png"></p>
+<p>第二阶段是，随着列表滑动，新元素出现。</p>
+<p><img src="./res/Untitled%2027.png" alt="android_render_part1/Untitled%2027.png"></p>
+<p>当继续向上滑动，RV收到move事件，继续处理offset，但此时<strong>Item 6</strong>地方可以显示出来了，因此需要创建、添加和绑定Item 6。添加view后，RecyclerView就需要调用requestLayout方法。</p>
+<p><img src="./res/Untitled%2028.png" alt="android_render_part1/Untitled%2028.png"></p>
+<p>requestLayout将从父容器（这里是RecyclerView）开始向上一级级传播，最终被ViewRootImpl处理，安排一次traversal。</p>
+<p><img src="./res/Untitled%2029.png" alt="android_render_part1/Untitled%2029.png"></p>
+<p>这次的traversal流程中会执行performMeasure和performLayout，去测量子元素和布局子元素。</p>
+<p><img src="./res/Untitled%2030.png" alt="android_render_part1/Untitled%2030.png"></p>
+<p>performMeasure将从view树自上向下传播measure，然后就得到了所有view的期望大小。</p>
+<p><img src="./res/Untitled%2031.png" alt="android_render_part1/Untitled%2031.png"></p>
+<p>完成了measure，就足以去计算view的layout信息。</p>
+<p><img src="./res/Untitled%2032.png" alt="android_render_part1/Untitled%2032.png"></p>
+<p>最终新加入的Item 6完成了layout阶段。（对于view tree来说，它已经处于可以显示状态）</p>
+<p><img src="./res/Untitled%2033.png" alt="android_render_part1/Untitled%2033.png"></p>
+<p>经过之后一些列的环节，Item 6最终被显示到了屏幕上。</p>
+<p><img src="./res/Untitled%2034.png" alt="android_render_part1/Untitled%2034.png"></p>
+<p>这里要注意一个重要细节：当RecyclerView去requestLayout时，这里有一个优化，它并不会真正去做requestLayout动作，实际上会根据已掌握的parent和child的信息，设置child view的offset同时创建新item。这个优化ListView也有。</p>
+<p>&lt;正文完&gt;</p>
+<h1 id="refference">Refference</h1>
+<ol>
+<li><a href="https://www.youtube.com/watch?v=zdQRIYOST64">Drawn out: How Android renders (Google I/O &lsquo;18)</a> Chet Haase和Roman Guy在IO 18上的演讲，详解了Android的渲染机制</li>
+<li><a href="https://androidperformance.com/2019/10/22/Android-Choreographer">Android 基于 Choreographer 的渲染机制详解</a> 这篇博文介绍了choreographer的工作原理</li>
+<li><a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/view/ViewGroup.java;l=4465;bpv=1;bpt=1">ViewGroup.dispatchGetDisplayList()</a> 从ViewGroup的源码可知，只有ViewGroup会去重建child的displayList，并且只有那个标记为PFLAG_INVALIDATED的child才会重建。</li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-14
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/android/">Android</a>
+          <a href="/tags/frame-render/">Frame Render</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/large_bitmap_rendering_optimization/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">ScrollView中大图片渲染性能测试及优化</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/ios_collectionviewcell_with_different_flowlayout/">
+            <span class="next-text nav-default">iOS - CollectionViewCell对应不同flow layout的实例</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

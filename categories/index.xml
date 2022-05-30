@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on Teoking writes something.</title>
+    <link>https://teoking.github.io/categories/</link>
+    <description>Recent content in Categories on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 30 May 2022 21:41:24 +0800</lastBuildDate><atom:link href="https://teoking.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>OS</title>
+      <link>https://teoking.github.io/categories/os/</link>
+      <pubDate>Mon, 30 May 2022 21:41:24 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/categories/os/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>AV</title>
+      <link>https://teoking.github.io/categories/av/</link>
+      <pubDate>Wed, 04 Aug 2021 19:31:05 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/categories/av/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>OOAD</title>
+      <link>https://teoking.github.io/categories/ooad/</link>
+      <pubDate>Wed, 16 Jun 2021 21:43:11 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/categories/ooad/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>UI</title>
+      <link>https://teoking.github.io/categories/ui/</link>
+      <pubDate>Tue, 08 Jun 2021 20:42:07 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/categories/ui/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>BestPractices</title>
+      <link>https://teoking.github.io/categories/bestpractices/</link>
+      <pubDate>Thu, 06 May 2021 19:08:37 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/categories/bestpractices/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Threading</title>
+      <link>https://teoking.github.io/categories/threading/</link>
+      <pubDate>Thu, 06 May 2021 18:19:57 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/categories/threading/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Misc</title>
+      <link>https://teoking.github.io/categories/misc/</link>
+      <pubDate>Thu, 06 May 2021 18:14:47 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/categories/misc/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

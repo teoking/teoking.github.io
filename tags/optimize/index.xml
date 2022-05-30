@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>optimize on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/optimize/</link>
+    <description>Recent content in optimize on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Fri, 21 May 2021 19:25:10 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/optimize/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ScrollView中大图片渲染性能测试及优化</title>
+      <link>https://teoking.github.io/post/large_bitmap_rendering_optimization/</link>
+      <pubDate>Fri, 21 May 2021 19:25:10 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/large_bitmap_rendering_optimization/</guid>
+      <description>编辑器UI中的性能问题 在编辑器的拼长图功能中，ScrollView最多容纳9个image view（自定义的图片view，非ImageView</description>
+    </item>
+    
+  </channel>
+</rss>

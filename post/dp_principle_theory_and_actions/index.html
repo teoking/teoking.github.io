@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>设计模式之美笔记二：设计原则 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="理论 SOLID原则 单一职责原则（SRP） Single Responsibility Principle：A class or module should have a single responsibility。 一个类或者模块只负责完成一个职" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/dp_principle_theory_and_actions/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="设计模式之美笔记二：设计原则" />
+<meta property="og:description" content="理论 SOLID原则 单一职责原则（SRP） Single Responsibility Principle：A class or module should have a single responsibility。 一个类或者模块只负责完成一个职" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/dp_principle_theory_and_actions/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-06-16T21:43:11+08:00" />
+<meta property="article:modified_time" content="2021-06-16T21:43:11+08:00" />
+
+<meta itemprop="name" content="设计模式之美笔记二：设计原则">
+<meta itemprop="description" content="理论 SOLID原则 单一职责原则（SRP） Single Responsibility Principle：A class or module should have a single responsibility。 一个类或者模块只负责完成一个职"><meta itemprop="datePublished" content="2021-06-16T21:43:11+08:00" />
+<meta itemprop="dateModified" content="2021-06-16T21:43:11+08:00" />
+<meta itemprop="wordCount" content="5064">
+<meta itemprop="keywords" content="OOAD,OOP,Theory," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="设计模式之美笔记二：设计原则"/>
+<meta name="twitter:description" content="理论 SOLID原则 单一职责原则（SRP） Single Responsibility Principle：A class or module should have a single responsibility。 一个类或者模块只负责完成一个职"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">设计模式之美笔记二：设计原则</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-06-16 </span>
+        <div class="post-category">
+            <a href="/categories/ooad/"> OOAD </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#理论">理论</a>
+      <ul>
+        <li><a href="#solid原则">SOLID原则</a>
+          <ul>
+            <li><a href="#单一职责原则srp">单一职责原则（SRP）</a></li>
+            <li><a href="#开闭原则ocp">开闭原则（OCP）</a></li>
+            <li><a href="#里氏替换原则lsp">里氏替换原则（LSP）</a></li>
+            <li><a href="#接口隔离原则isp">接口隔离原则（ISP）</a></li>
+            <li><a href="#依赖反转原则ioc">依赖反转原则（IOC）</a></li>
+          </ul>
+        </li>
+        <li><a href="#kiss和yagni原则">KISS和YAGNI原则</a>
+          <ul>
+            <li><a href="#kiss原则">KISS原则</a></li>
+            <li><a href="#yagni">YAGNI</a></li>
+          </ul>
+        </li>
+        <li><a href="#dry原则">DRY原则</a>
+          <ul>
+            <li><a href="#dry-原则">DRY 原则</a></li>
+            <li><a href="#代码复用性">代码复用性</a></li>
+          </ul>
+        </li>
+        <li><a href="#迪米特法则lod">迪米特法则（LOD）</a>
+          <ul>
+            <li><a href="#高内聚与松耦合">高内聚与松耦合</a></li>
+            <li><a href="#迪米特法则">迪米特法则</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="理论">理论</h1>
+<h2 id="solid原则">SOLID原则</h2>
+<h3 id="单一职责原则srp">单一职责原则（SRP）</h3>
+<p>Single Responsibility Principle：A class or module should have a single responsibility。</p>
+<p><strong>一个类或者模块只负责完成一个职责（或者功能）</strong>。也就是说，<strong>不要设计大而全的类，要设计粒度小、功能单一的类</strong>。换个角度来讲就是，一个类包含了两个或者两个以上业务不相干的功能，那我们就说它职责不够单一，应该将它拆分成多个功能更加单一、粒度更细的类。</p>
+<p>这个原则描述的对象包含两个，一个是类（class），一个是模块（module）。光宇这两个概念的理解分两种：</p>
+<ul>
+<li>一种理解是：把模块看作比类更加抽象的概念，类也可以看作模块</li>
+<li>另一种理解是：把模块看作比类更加粗粒度的代码块，模块中包含多个类，多个类组成一个模块</li>
+</ul>
+<p>原文以UserInfo类的设计为例。</p>
+<p>综上所述，评价一个类的职责是否足够单一，我们并没有一个非常明确的、可以量化的标准，可以说，这是件非常主观、仁者见仁智者见智的事情。实际上，在真正的软件开发中，我们也没必要过于未雨绸缪，过度设计。所以，<strong>我们可以先写一个粗粒度的类，满足业务需求。随着业务的发展，如果粗粒度的类越来越庞大，代码越来越多，这个时候，我们就可以将这个粗粒度的类，拆分成几个更细粒度的类。这就是所谓的持续重构</strong>。</p>
+<p>可执行地判断类是否职责单一的方法：</p>
+<ul>
+<li><strong>类中的代码行数、函数或属性过多</strong>，会影响代码的可读性和可维护性，我们就需要考虑对类进行拆分；</li>
+<li><strong>类依赖的其他类过多，或者依赖类的其他类过多</strong>，不符合高内聚、低耦合的设计思想，我们就需要考虑对类进行拆分；</li>
+<li><strong>私有方法过多，我们就要考虑能否将私有方法独立到新的类中，设置为 public 方法，供更多的类使用，从而提高代码的复用性</strong>；</li>
+<li><strong>比较难给类起一个合适名字，很难用一个业务名词概括，或者只能用一些笼统的 Manager、Context 之类的词语来命名，这就说明类的职责定义得可能不够清晰</strong>；</li>
+<li><strong>类中大量的方法都是集中操作类中的某几个属性</strong>，比如，在 UserInfo 例子中，如果一半的方法都是在操作 address 信息，那就可以考虑将这几个属性和对应的方法拆分出来</li>
+</ul>
+<p>当然类的职责并不是设计得越单一越好，原文举例序列化接口，如果序列化和反序列化拆分为两个类，当其中一方发生变更，这两个类都要修改，而这种修改又不是强制的，分散在两个类中，容易忘记。因此这样的拆分反倒造成了可维护性变差。</p>
+<p><strong>不管是应用设计原则还是设计模式，最终的目的还是提高代码的可读性、可扩展性、复用性、可维护性等。我们在考虑应用某一个设计原则是否合理的时候，也可以以此作为最终的考量标准。</strong></p>
+<h3 id="开闭原则ocp">开闭原则（OCP）</h3>
+<p>Open Closed Principle，简写为 OCP.</p>
+<p>software entities (modules, classes, functions, etc.) should be open for extension , but closed for modification。翻译成中文就是：软件实体（模块、类、方法等）应该“对扩展开放、对修改关闭”。</p>
+<p>开闭原则讲的就是代码的扩展性问题，是判断一段代码是否易扩展的“金标准”。</p>
+<p><strong>为了尽量写出扩展性好的代码，我们要时刻具备扩展意识、抽象意识、封装意识。这些“潜意识”可能比任何开发技巧都重要。</strong></p>
+<p>在写代码的时候后，我们要多花点时间往前多思考一下，这段代码未来可能有哪些需求变更、如何设计代码结构，事先留好扩展点，以便在未来需求变更的时候，不需要改动代码整体结构、做到最小代码改动的情况下，新的代码能够很灵活地插入到扩展点上，做到“对扩展开放、对修改关闭”。</p>
+<p>还有，在<strong>识别出代码可变部分和不可变部分之后，我们要将可变部分封装起来，隔离变化，提供抽象化的不可变接口，给上层系统使用</strong>。当具体的实现发生变化的时候，我们只需要基于相同的抽象接口，扩展一个新的实现，替换掉老的实现即可，上游系统的代码几乎不需要修改。</p>
+<p>在众多的设计原则、思想、模式中，最常用来提高代码扩展性的方法有：多态、依赖注入、基于接口而非实现编程，以及大部分的设计模式（比如，装饰、策略、模板、职责链、状态等）。</p>
+<p><em>以个人经验，还有一些方法也能直接或间接的对实现更具可扩展性的设计有帮助的方法：如从高质量的开源代码、参与的项目代码中、请教资深工程师（请对方review技术方案和提建议）、撰写设计文档等。</em></p>
+<h3 id="里氏替换原则lsp">里氏替换原则（LSP）</h3>
+<p>中文定义：</p>
+<blockquote>
+<p>子类对象（object of subtype/derived class）能够替换程序（program）中父类对象（object of base/parent class）出现的任何地方，并且保证原来程序的逻辑行为（behavior）不变及正确性不被破坏。</p>
+</blockquote>
+<p>里式替换原则还有另外一个更加能落地、更有指导意义的描述，那就是**“Design By Contract”<strong>，中文翻译就是</strong>“按照协议来设计”**。</p>
+<p>典型违反里氏替换原则的例子：</p>
+<ol>
+<li>子类违背父类声明要实现的功能</li>
+<li>子类违背父类对输入、输出、异常的约定</li>
+<li>子类违背父类注释中所罗列的任何特殊说明</li>
+</ol>
+<p>判断子类的设计实现是否违背里式替换原则，还有一个小窍门：<strong>那就是拿父类的单元测试去验证子类的代码。如果某些单元测试运行失败，就有可能说明，子类的设计实现没有完全地遵守父类的约定，子类有可能违背了里式替换原则</strong>。</p>
+<p>与多态的区别：</p>
+<blockquote>
+<p>虽然从定义描述和代码实现上来看，多态和里式替换有点类似，但它们关注的角度是不一样的。<strong>多态是面向对象编程的一大特性，也是面向对象编程语言的一种语法。它是一种代码实现的思路</strong>。而<strong>里式替换是一种设计原则，用来指导继承关系中子类该如何设计，子类的设计要保证在替换父类的时候，不改变原有程序的逻辑及不破坏原有程序的正确性</strong>。</p>
+</blockquote>
+<h3 id="接口隔离原则isp">接口隔离原则（ISP）</h3>
+<p>“ Interface Segregation Principle”，缩写为 ISP。Robert Martin 在 SOLID 原则中是这样定义它的：“Clients should not be forced to depend upon interfaces that they do not use。”直译成中文的话就是：<strong>客户端不应该被强迫依赖它不需要的接口</strong>。其中的“客户端”，可以理解为接口的调用者或者使用者。</p>
+<p>接口可以理解为下面三样东西：</p>
+<ul>
+<li>
+<p>一组 API 接口集合</p>
+</li>
+<li>
+<p>单个 API 接口或函数</p>
+</li>
+<li>
+<p>OOP 中的接口概念</p>
+</li>
+</ul>
+<p><strong>把“接口”理解为一组 API 接口集合</strong></p>
+<p>设计微服务或者类库接口的时候，如果部分接口只被部分调用者使用，那我们就需要将这部分接口隔离出来，单独给对应的调用者使用，而不是强迫其他调用者也依赖这部分不会被用到的接口。</p>
+<p><strong>把“接口”理解为单个 API 接口或函数</strong></p>
+<p>那接口隔离原则就可以理解为：函数的设计要功能单一，不要将多个不同的功能逻辑在一个函数中实现。接下来，我们还是通过一个例子来解释一下。</p>
+<p>接口隔离原则跟单一职责原则有点类似，不过稍微还是有点区别。<em>单一职责原则针对的是模块、类、接口的设计。而接口隔离原则相对于单一职责原则，一方面它更侧重于接口的设计，另一方面它的思考的角度不同。它提供了一种判断接口是否职责单一的标准：通过调用者如何使用接口来间接地判定。如果调用者只使用部分接口或接口的部分功能，那接口的设计就不够职责单一。</em></p>
+<p><strong>把“接口”理解为 OOP 中的接口概念</strong></p>
+<h3 id="依赖反转原则ioc">依赖反转原则（IOC）</h3>
+<p><strong>控制反转（IOC）</strong></p>
+<p>Inversion Of Control，缩写为 IOC</p>
+<p>框架提供了一个可扩展的代码骨架，用来组装对象、管理整个执行流程。程序员利用框架进行开发的时候，只需要往预留的扩展点上，添加跟自己业务相关的代码，就可以利用框架来驱动整个程序流程的执行。</p>
+<p>这里的“控制”指的是对程序执行流程的控制，而“反转”指的是在没有使用框架之前，程序员自己控制整个程序的执行。在使用框架之后，整个程序的执行流程可以通过框架来控制。流程的控制权从程序员“反转”到了框架。</p>
+<p><strong>依赖注入（DI）</strong></p>
+<p>依赖注入跟控制反转恰恰相反，它是一种具体的编码技巧。依赖注入的英文翻译是 Dependency Injection，缩写为 DI.</p>
+<p>依赖注入：不通过 new() 的方式在类内部创建依赖类对象，而是将依赖的类对象在外部创建好之后，通过构造函数、函数参数等方式传递（或注入）给类使用。</p>
+<p>通过依赖注入的方式来将依赖的类对象传递进来，这样就提高了代码的扩展性，我们可以灵活地替换依赖的类。它是编写可测试性代码最有效的手段。</p>
+<p><strong>依赖注入框架（DI Framework）</strong></p>
+<p>只需要通过依赖注入框架提供的扩展点，简单配置一下所有需要创建的类对象、类与类之间的依赖关系，就可以实现由框架来自动创建对象、管理对象的生命周期、依赖注入等原本需要程序员来做的事情。</p>
+<p>现成的依赖注入框架有很多，比如 Google Guice、Java Spring、Pico Container、Butterfly Container 等。不过，如果你熟悉 Java Spring 框架，你可能会说，Spring 框架自己声称是控制反转容器（Inversion Of Control Container）。</p>
+<p><strong>依赖反转原则（DIP）</strong></p>
+<p>Dependency Inversion Principle，缩写为 DIP，也成为依赖倒置原则。</p>
+<blockquote>
+<p>High-level modules shouldn’t depend on low-level modules. Both modules should depend on abstractions. In addition, abstractions shouldn’t depend on details. Details depend on abstractions.</p>
+</blockquote>
+<p>高层模块（high-level modules）不要依赖低层模块（low-level）。高层模块和低层模块应该通过抽象（abstractions）来互相依赖。除此之外，抽象（abstractions）不要依赖具体实现细节（details），具体实现细节（details）依赖抽象（abstractions）。</p>
+<p>所谓高层模块和低层模块的划分，简单来说就是，在调用链上，调用者属于高层，被调用者属于低层。</p>
+<p>实际上，这条原则主要还是用来指导框架层面的设计，跟前面讲到的控制反转类似。</p>
+<h2 id="kiss和yagni原则">KISS和YAGNI原则</h2>
+<h3 id="kiss原则">KISS原则</h3>
+<p>KISS有好几个版本：</p>
+<ul>
+<li>Keep It Simple and Stupid.</li>
+<li>Keep It Short and Simple.</li>
+<li>Keep It Simple and Straightforward.</li>
+</ul>
+<p>KISS 原则是保持代码可读和可维护的重要手段。KISS 原则中的“简单”并不是以代码行数来考量的。代码行数越少并不代表代码越简单，我们还要考虑逻辑复杂度、实现难度、代码的可读性等。而且，本身就复杂的问题，用复杂的方法解决，并不违背 KISS 原则。除此之外，同样的代码，在某个业务场景下满足 KISS 原则，换一个应用场景可能就不满足了。</p>
+<p>写出KISS原则的几个方法：</p>
+<ul>
+<li>
+<p>不要使用同事可能不懂的技术来实现代码。比如前面例子中的正则表达式，还有一些编程语言中过于高级的语法等。</p>
+</li>
+<li>
+<p>不要重复造轮子，要善于使用已经有的工具类库。经验证明，自己去实现这些类库，出 bug 的概率会更高，维护的成本也比较高。</p>
+</li>
+<li>
+<p>不要过度优化。不要过度使用一些奇技淫巧（比如，位运算代替算术运算、复杂的条件语句代替 if-else、使用一些过于底层的函数等）来优化代码，牺牲代码的可读性。</p>
+</li>
+</ul>
+<h3 id="yagni">YAGNI</h3>
+<p>You Ain’t Gonna Need It，简称YAGNI。直译就是：你不会需要它。当用在软件开发中的时候，它的意思是：不要去设计当前用不到的功能；不要去编写当前用不到的代码。实际上，这条原则的核心思想就是：不要做过度设计。</p>
+<p>YAGNI 原则跟 KISS 原则并非一回事儿。KISS 原则讲的是“如何做”的问题（尽量保持简单），而 YAGNI 原则说的是“要不要做”的问题（当前不需要的就不要做）。</p>
+<h2 id="dry原则">DRY原则</h2>
+<h3 id="dry-原则">DRY 原则</h3>
+<p>Don’t Repeat Yourself。中文直译为：不要重复自己。将它应用在编程中，可以理解为：不要写重复的代码。</p>
+<p>实现逻辑重复，但功能语义不重复的代码，并不违反 DRY 原则。实现逻辑不重复，但功能语义重复的代码，也算是违反 DRY 原则。除此之外，代码执行重复也算是违反 DRY 原则。</p>
+<h3 id="代码复用性">代码复用性</h3>
+<p>提高代码可复用性的一些方法，有以下 7 点:</p>
+<ul>
+<li>减少代码耦合</li>
+<li>满足单一职责原则</li>
+<li>模块化</li>
+<li>业务与非业务逻辑分离</li>
+<li>通用代码下沉</li>
+<li>继承、多态、抽象、封装</li>
+<li>应用模板等设计模式</li>
+</ul>
+<p>我们在第一次写代码的时候，如果当下没有复用的需求，而未来的复用需求也不是特别明确，并且开发可复用代码的成本比较高，那我们就不需要考虑代码的复用性。在之后开发新的功能的时候，发现可以复用之前写的这段代码，那我们就重构这段代码，让其变得更加可复用。</p>
+<h2 id="迪米特法则lod">迪米特法则（LOD）</h2>
+<h3 id="高内聚与松耦合">高内聚与松耦合</h3>
+<p>“高内聚”用来指导类本身的设计，“松耦合”用来指导类与类之间依赖关系的设计</p>
+<p>所谓高内聚，就是指相近的功能应该放到同一个类中，不相近的功能不要放到同一个类中。</p>
+<p>所谓松耦合是说，在代码中，类与类之间的依赖关系简单清晰。即使两个类有依赖关系，一个类的代码改动不会或者很少导致依赖类的代码改动。</p>
+<h3 id="迪米特法则">迪米特法则</h3>
+<p>Law of Demeter，缩写是 LOD。单从这个名字上来看，我们完全猜不出这个原则讲的是什么。不过，它还有另外一个更加达意的名字，叫作最小知识原则，英文翻译为：The Least Knowledge Principle。</p>
+<p>英文定义：</p>
+<blockquote>
+<p>Each unit should have only limited knowledge about other units: only units “closely” related to the current unit. Or: Each unit should only talk to its friends; Don’t talk to strangers.</p>
+</blockquote>
+<p>中文：</p>
+<blockquote>
+<p>每个模块（unit）只应该了解那些与它关系密切的模块（units: only units “closely” related to the current unit）的有限知识（knowledge）。或者说，每个模块只和自己的朋友“说话”（talk），不和陌生人“说话”（talk）。</p>
+</blockquote>
+<p>不该有直接依赖关系的类之间，不要有依赖；有依赖关系的类之间，尽量只依赖必要的接口。迪米特法则是希望减少类之间的耦合，让类越独立越好。每个类都应该少了解系统的其他部分。一旦发生变化，需要了解这一变化的类就会比较少。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-06-16
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/ooad/">OOAD</a>
+          <a href="/tags/oop/">OOP</a>
+          <a href="/tags/theory/">Theory</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/libopenshot/build/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">libopenshot-编译</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/learn_android_canvas_by_samples/">
+            <span class="next-text nav-default">Canvas API Demo及性能优化</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

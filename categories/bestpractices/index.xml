@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>BestPractices on Teoking writes something.</title>
+    <link>https://teoking.github.io/categories/bestpractices/</link>
+    <description>Recent content in BestPractices on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 06 May 2021 19:08:37 +0800</lastBuildDate><atom:link href="https://teoking.github.io/categories/bestpractices/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Android Development最佳实践</title>
+      <link>https://teoking.github.io/post/android_development_best_practices/</link>
+      <pubDate>Thu, 06 May 2021 19:08:37 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/android_development_best_practices/</guid>
+      <description>原文：Android Development | Best Practices 仅仅写代码是不够的，要高效地写代码。 下面是作者总结的Android开发最佳实践。 Tips and not Tricks 1) Choose your App Architecture wisely based on your need, not just</description>
+    </item>
+    
+  </channel>
+</rss>

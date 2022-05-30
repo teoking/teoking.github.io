@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Android on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/android/</link>
+    <description>Recent content in Android on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 30 May 2022 21:41:24 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/android/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Window Subsystem Android Review</title>
+      <link>https://teoking.github.io/post/wsa_review/</link>
+      <pubDate>Mon, 30 May 2022 21:41:24 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/wsa_review/</guid>
+      <description>周末看到TG Android Dev群里有人在讨论Windows Subsystem Android（WSA），觉得有点意思。于是周末花了数个小时，把笔记本安装上Windows</description>
+    </item>
+    
+    <item>
+      <title>Canvas API Demo及性能优化</title>
+      <link>https://teoking.github.io/post/learn_android_canvas_by_samples/</link>
+      <pubDate>Tue, 08 Jun 2021 20:42:07 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/learn_android_canvas_by_samples/</guid>
+      <description>本片文章通过两个例子来看一下Canvas API的用法，以及如何通过HWUI Trace和Profiler测试性能并进行优化。 示例一：手指涂鸦 doodle</description>
+    </item>
+    
+    <item>
+      <title>从单元测试看Handler</title>
+      <link>https://teoking.github.io/post/learn_handler_by_unit_tests/</link>
+      <pubDate>Mon, 31 May 2021 23:41:15 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/learn_handler_by_unit_tests/</guid>
+      <description>首先提出两个问题： Handler主要解决了什么问题？ 如何实现的延迟消息？ 概述 Handler是Android OS中根基性的组件，在framew</description>
+    </item>
+    
+    <item>
+      <title>ScrollView中大图片渲染性能测试及优化</title>
+      <link>https://teoking.github.io/post/large_bitmap_rendering_optimization/</link>
+      <pubDate>Fri, 21 May 2021 19:25:10 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/large_bitmap_rendering_optimization/</guid>
+      <description>编辑器UI中的性能问题 在编辑器的拼长图功能中，ScrollView最多容纳9个image view（自定义的图片view，非ImageView</description>
+    </item>
+    
+    <item>
+      <title>Android渲染Part1:  帧渲染</title>
+      <link>https://teoking.github.io/post/android_render_part1/</link>
+      <pubDate>Fri, 14 May 2021 14:47:46 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/android_render_part1/</guid>
+      <description>这篇文章是Chet Haase和Romain Guy做的&amp;lt;Drawn out: How Android renders (Google I/O &amp;lsquo;18)&amp;gt;演讲的翻译。由于内容较多分为两</description>
+    </item>
+    
+    <item>
+      <title>Android Development最佳实践</title>
+      <link>https://teoking.github.io/post/android_development_best_practices/</link>
+      <pubDate>Thu, 06 May 2021 19:08:37 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/android_development_best_practices/</guid>
+      <description>原文：Android Development | Best Practices 仅仅写代码是不够的，要高效地写代码。 下面是作者总结的Android开发最佳实践。 Tips and not Tricks 1) Choose your App Architecture wisely based on your need, not just</description>
+    </item>
+    
+    <item>
+      <title>Android VectorDrawable系列文章Review</title>
+      <link>https://teoking.github.io/post/android_vectordrawable_guides_notes/</link>
+      <pubDate>Thu, 06 May 2021 19:05:47 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/android_vectordrawable_guides_notes/</guid>
+      <description>该系列文章作者是Android团队的Nick Butcher： Understanding Android’s vector image format: VectorDrawable Draw a Path: Rendering Android VectorDrawables Using vector assets in Android apps Vector Assets - Android Conference Talks Vector Drawabl</description>
+    </item>
+    
+    <item>
+      <title>Android中绘制圆角的三种方式</title>
+      <link>https://teoking.github.io/post/draw_round_corner_3ways_in_android/</link>
+      <pubDate>Thu, 06 May 2021 17:52:46 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/draw_round_corner_3ways_in_android/</guid>
+      <description>在iOS平台中，给View指定圆角是很方便的。只需要在代码中设置layer.cornerRadius即可。但在Android平台中，事情却有</description>
+    </item>
+    
+    <item>
+      <title>Android GLES基础：从TextRender看Renderer实现</title>
+      <link>https://teoking.github.io/post/implement_an_gles_renderer_in_android/</link>
+      <pubDate>Thu, 06 May 2021 17:42:32 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/implement_an_gles_renderer_in_android/</guid>
+      <description>以AOSP Media CTS中的TextureRender的实现来分析和理解OpenGL ES 2.0在Android平台的使用。 通常，实现一个render</description>
+    </item>
+    
+  </channel>
+</rss>

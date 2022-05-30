@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://teoking.github.io/sitemap.xml

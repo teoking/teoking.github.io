@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>RxSwift和RxCocoa入门 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="本文主要来自Getting Started With RxSwift and RxCocoa这篇文章 命令式编程 vs 响应式编程 目前大部分面向对象语言都是命令式的编程范式，即通过代码下达命令" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/getting_started_with_rxswift_and_rxcocoa/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="RxSwift和RxCocoa入门" />
+<meta property="og:description" content="本文主要来自Getting Started With RxSwift and RxCocoa这篇文章 命令式编程 vs 响应式编程 目前大部分面向对象语言都是命令式的编程范式，即通过代码下达命令" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/getting_started_with_rxswift_and_rxcocoa/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-06T18:19:57+08:00" />
+<meta property="article:modified_time" content="2021-05-06T18:19:57+08:00" />
+
+<meta itemprop="name" content="RxSwift和RxCocoa入门">
+<meta itemprop="description" content="本文主要来自Getting Started With RxSwift and RxCocoa这篇文章 命令式编程 vs 响应式编程 目前大部分面向对象语言都是命令式的编程范式，即通过代码下达命令"><meta itemprop="datePublished" content="2021-05-06T18:19:57+08:00" />
+<meta itemprop="dateModified" content="2021-05-06T18:19:57+08:00" />
+<meta itemprop="wordCount" content="5494">
+<meta itemprop="keywords" content="iOS,RxSwift,RxCocoa," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="RxSwift和RxCocoa入门"/>
+<meta name="twitter:description" content="本文主要来自Getting Started With RxSwift and RxCocoa这篇文章 命令式编程 vs 响应式编程 目前大部分面向对象语言都是命令式的编程范式，即通过代码下达命令"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">RxSwift和RxCocoa入门</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-06 </span>
+        <div class="post-category">
+            <a href="/categories/threading/"> Threading </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#命令式编程-vs-响应式编程">命令式编程 vs 响应式编程</a></li>
+    <li><a href="#响应式编程库现状">响应式编程库现状</a></li>
+    <li><a href="#rxswift和rxcocoa">RxSwift和RxCocoa</a>
+      <ul>
+        <li><a href="#observables-and-observers">Observables and Observers</a></li>
+        <li><a href="#disposebag">DisposeBag</a></li>
+      </ul>
+    </li>
+    <li><a href="#开始吧">开始吧</a>
+      <ul>
+        <li><a href="#非reactive的实现">非reactive的实现</a></li>
+        <li><a href="#使用rxswift改写购物车商品数量">使用RxSwift改写购物车商品数量</a></li>
+        <li><a href="#使用rxcocoa对tableview进行reactive改造">使用RxCocoa对TableView进行Reactive改造</a></li>
+        <li><a href="#使用rxswift处理用户输入direct-text-input">使用RxSwift处理用户输入（Direct Text Input）</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>本文主要来自<a href="https://www.raywenderlich.com/1228891-getting-started-with-rxswift-and-rxcocoa">Getting Started With RxSwift and RxCocoa</a>这篇文章</p>
+<h1 id="命令式编程-vs-响应式编程">命令式编程 vs 响应式编程</h1>
+<ol>
+<li>
+<p>目前大部分面向对象语言都是命令式的编程范式，即通过代码下达命令给系统；虽然可以通过各种技术手段知道数据的变化，但是不能做到自动化地通知。</p>
+</li>
+<li>
+<p>响应式编程则是想让数据的变化可以自动地通知，你不再需要关心特定状态，这个状态通知到响应的过程，响应式编程（库）已经帮你处理了。</p>
+</li>
+</ol>
+<p>维基百科上有一个更明确的例子：</p>
+<blockquote>
+<p>对于命令式编程，当a = b + c, a由b+c计算得到；但是之后，b和c发生了变化，这个变化对a并不生效，a还是保持原有的值；而当使用响应式编程时，当b和c发生变化，程序不需要再次执行a = b + c公式，a的值就会自动更新。</p>
+</blockquote>
+<h1 id="响应式编程库现状">响应式编程库现状</h1>
+<p>目前分为两派</p>
+<ul>
+<li>
+<p>ReactiveX主导的rx系列库，语言支持如RxSwift, RxKotlin, 平台支持如RxAndroid, RxCocoa(iOS)；</p>
+</li>
+<li>
+<p>ReactiveCocoa(GitHub发起)库，语言仅支持swift，objective-c，平台仅支持iOS。</p>
+</li>
+</ul>
+<p>相同点：</p>
+<ul>
+<li>
+<p>都是Reactive Functional Programming（响应式函数编程）的实现</p>
+</li>
+<li>
+<p>二者github star数不分伯仲，均接近20k级别</p>
+</li>
+<li>
+<p>都有很好的社区支持</p>
+</li>
+</ul>
+<p>不同点：</p>
+<ul>
+<li>
+<p>Hot、Code Signal实现API不同：RAC设计了两个api分别对应hot、code signal，RxSwift仅有一个</p>
+</li>
+<li>
+<p>错误处理，RAC相对容易一些</p>
+</li>
+<li>
+<p>UI Bindings，RAC有不少历史包袱，RxSwift则更容易使用</p>
+</li>
+<li>
+<p>Rx系列支持更多语言和平台</p>
+</li>
+</ul>
+<p>关于这两个库的详细对比，见：<a href="https://www.raywenderlich.com/1190-reactivecocoa-vs-rxswift">ReactiveCocoa vs RxSwift</a></p>
+<h1 id="rxswift和rxcocoa">RxSwift和RxCocoa</h1>
+<p>RxSwift: 响应式编程在Swift语言领域的实现库</p>
+<p>RxCocoa: 针对Cocoa平台（iOS &amp; Mac OS）的响应式编程库</p>
+<h2 id="observables-and-observers">Observables and Observers</h2>
+<p>一个Observable发送变化通知</p>
+<p>一个Observer订阅一个Observable，当Observable有变化时会被通知</p>
+<p>多个Observer可以监听一个Observable，当发生变化时，所有Observer都会被通知</p>
+<h2 id="disposebag">DisposeBag</h2>
+<p>DisposeBag是RxSwift提供的处理ARC和内存管理的工具。销毁一个父对象时，会使得DisposeBag中的Observer对象同时销毁。</p>
+<p>当持有DisposeBag的对象的<code>deinit()</code>调用时，每个disposable Observer都会取消对监听对象的订阅，这时ARC就可以正常回收内存了。</p>
+<p>如果没有DisposeBag的话，可能会出现两种情况，要么是observer会保留下来不被销毁，继续监听；要么被释放，造成崩溃。</p>
+<p>建立Observer对象时，记得同时添加到DisposeBag中，来让DisposeBag帮助你回收该对象。</p>
+<h1 id="开始吧">开始吧</h1>
+<p>先下载<a href="https://koenig-media.raywenderlich.com/uploads/2019/04/Materials_rxswift5.zip">示例工程</a></p>
+<p>打开编译后即可看到如下界面</p>
+<p><img src="./initial_landing.png" alt="initial landing"></p>
+<p>这个例子功能很简单：选择巧克力后，会将其加入到购物车，点击右上角购物车图标可以进入购物车，然后进行结账和模拟支付。</p>
+<h2 id="非reactive的实现">非reactive的实现</h2>
+<p>在<strong>ChocolatesOfTheWorldViewController.swift</strong>中可以看到实现<code>UITableViewDelegate</code>和<code>UITableViewDataSource</code>的extension。</p>
+<p>在观察一下<code>updateCartButton()</code>这个方法，它用来更新购物车中的巧克力数量，在下面两种情况时调用：</p>
+<ol>
+<li>
+<p><code>viewWillAppear(_:)</code>：在view controller显示之前</p>
+</li>
+<li>
+<p><code>tableView(_:didSelectRowAt:)</code>：当点击列表，添加巧克力到购物车时</p>
+</li>
+</ol>
+<p>这就是命令式编程方式实现：你必须手动调用方法来更新购物车巧克力数量。</p>
+<h2 id="使用rxswift改写购物车商品数量">使用RxSwift改写购物车商品数量</h2>
+<p>购物车商品信息保存在ShoppingCart.sharedCart这个单例中</p>
+<p>定义在ShoppingCart.sharedCart中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nv">chocolates</span><span class="p">:</span> <span class="p">[</span><span class="n">Chocolate</span><span class="p">]</span> <span class="p">=</span> <span class="p">[]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>虽然可以给其定义中添加一个didSet闭包，但问题是，这种做法只能在整个数组更新时才能被通知，而不是数组中任意元素变化就可以得到通知。</p>
+<p>针对这种情况，RxSwift提供了解决方案，按照如下方式创建chocolates变量：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">chocolates</span><span class="p">:</span> <span class="n">BehaviorRelay</span><span class="o">&lt;</span><span class="p">[</span><span class="n">Chocolate</span><span class="p">]</span><span class="o">&gt;</span> <span class="p">=</span> <span class="n">BehaviorRelay</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="p">[])</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>使用<code>RxSwift</code>的<code>BehaviorRelay</code>对象，持有一个Chocolate数组类型的值。这么做的目的是：通过BehaviorRelay对象的asObservable()可以得到一个observable，这样我们就可以添加监听者来订阅BehaviorRelay对象的value（chocolate数组）的变化。</p>
+<p>上述做法的缺点是，对chocolate数组的修改必须修改为使用<code>accept(_:)</code>，这是<code>BehaviorRelay</code>为修改value属性提供的方法。由于对数据的访问方式发生了变化，代码中相应的地方也要做修改。</p>
+<p>在<strong>ShoppingCart.swift</strong>中</p>
+<p><code>totalCost()</code>方法的修改：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="k">return</span> <span class="n">chocolates</span><span class="p">.</span><span class="bp">reduce</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 修改为</span>
+</span></span><span class="line"><span class="cl"><span class="k">return</span> <span class="n">chocolates</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="bp">reduce</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>itemCountString()</code>方法的修改：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="k">guard</span> <span class="n">chocolates</span><span class="p">.</span><span class="bp">count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 修改为</span>
+</span></span><span class="line"><span class="cl"><span class="k">guard</span> <span class="n">chocolates</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="bp">count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">setOfChocolates</span> <span class="p">=</span> <span class="n">Set</span><span class="p">&lt;</span><span class="n">Chocolate</span><span class="p">&gt;(</span><span class="n">chocolates</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 修改为</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">setOfChocolates</span> <span class="p">=</span> <span class="n">Set</span><span class="p">&lt;</span><span class="n">Chocolate</span><span class="p">&gt;(</span><span class="n">chocolates</span><span class="p">.</span><span class="n">value</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">count</span><span class="p">:</span> <span class="nb">Int</span> <span class="p">=</span> <span class="n">chocolates</span><span class="p">.</span><span class="bp">reduce</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 修改为</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">count</span><span class="p">:</span> <span class="nb">Int</span> <span class="p">=</span> <span class="n">chocolates</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="bp">reduce</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{`</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在<strong>CartViewController.swift</strong>中</p>
+<p><code>reset()</code>方法的修改：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span> <span class="p">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 修改为</span>
+</span></span><span class="line"><span class="cl"><span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span><span class="p">.</span><span class="n">accept</span><span class="p">([])</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在<strong>ChocolatesOfTheWorldViewController.swift</strong>中</p>
+<p><code>updateCartButton()</code>方法的修改：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="c1">// 修改为</span>
+</span></span><span class="line"><span class="cl"><span class="n">cartButton</span><span class="p">.</span><span class="n">title</span> <span class="p">=</span> <span class="s">&#34;</span><span class="si">\(</span><span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="bp">count</span><span class="si">)</span><span class="s"> \u{1f36b}&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>tableView(_:didSelectRowAt:)</code>方法的修改：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">chocolate</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 修改为</span>
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">newValue</span> <span class="p">=</span>  <span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span><span class="p">.</span><span class="n">value</span> <span class="o">+</span> <span class="p">[</span><span class="n">chocolate</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span><span class="p">.</span><span class="n">accept</span><span class="p">(</span><span class="n">newValue</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>完成上述修改后，我们就可以来对<code>chocolates</code>添加<code>observer</code>了。</p>
+<p>在<strong>ChocolatesOfTheWorldViewController.swift</strong>中，新增：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">setupCartObserver</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">//1</span>
+</span></span><span class="line"><span class="cl">  <span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span><span class="p">.</span><span class="n">asObservable</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">onNext</span><span class="p">:</span> <span class="p">{</span> <span class="c1">//2</span>
+</span></span><span class="line"><span class="cl">      <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="n">chocolates</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">      <span class="kc">self</span><span class="p">.</span><span class="n">cartButton</span><span class="p">.</span><span class="n">title</span> <span class="p">=</span> <span class="s">&#34;</span><span class="si">\(</span><span class="n">chocolates</span><span class="p">.</span><span class="bp">count</span><span class="si">)</span><span class="s"> \u{1f36b}&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">})</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">disposed</span><span class="p">(</span><span class="n">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span> <span class="c1">//3</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上述代码即可实现对购物车的自动更新。</p>
+<p>可以看到，RxSwift大量使用函数链，就是说每一个函数接收前一个函数的结果。</p>
+<p>对上述代码的解释：</p>
+<ol>
+<li>
+<p>从购物车中<code>chocolates</code>得到一个<code>Observable</code></p>
+</li>
+<li>
+<p>对<code>Observable</code>调用<code>subscribe(onNext:)</code>来监听其值变化。<code>subscribe(onNext:)</code>接收的闭包在每次值变化时都会被执行。闭包中的入参就是Observable变化后的最新值。除非你取消订阅，或者dispose订阅，你会一直收到变化通知。这个方法的返回的一个<code>Disposable</code>（也是一个<code>Observer</code>）。</p>
+</li>
+<li>
+<p>将上一步返回的<code>Observer</code>加入到我们的定义<code>disposeBag</code>中。这会让被订阅对象被销毁时，订阅者也被处理。</p>
+</li>
+</ol>
+<p>最后，删除<code>updateCartButton()</code>方法的调用。</p>
+<p>然后执行代码，你会看到巧克力列表：</p>
+<p><img src="./Simulator-Screen-Shot-Jul-4-2016-9.26.45-PM-282x500.png" alt="RXCocoa updated list of chocolates"></p>
+<p>但此时，点击单个巧克力，购物车位置一直显示的是“Item”。这是因为<code>setupCartObserver()</code>没有被调用，导致<code>Observer</code>并没有建立起来。在<strong>ChocolatesOfTheWorldViewController.swift</strong>的<code>viewDidLoad()</code>方法最后调用该它。</p>
+<p>再次编译运行，就会看到，当点击巧克力时，购物车自动更新了。</p>
+<p><img src="./added_chocolate-282x500.png" alt="added chocolate"></p>
+<h2 id="使用rxcocoa对tableview进行reactive改造">使用RxCocoa对TableView进行Reactive改造</h2>
+<p>RxCocoa为原生UI组件添加了响应式API。这本例中，使用TableView的响应式API，可以不再用自己实现<code>UITableViewDataSource</code>和<code>UITableViewDelegate</code>。</p>
+<p>实现步骤：</p>
+<p>第一步：代码中删掉data source和delegate相关代码。</p>
+<p>第二步是将table view使用到的数据从数组，改为一个Observable：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">europeanChocolates</span> <span class="p">=</span> <span class="n">Observable</span><span class="p">.</span><span class="n">just</span><span class="p">(</span><span class="n">Chocolate</span><span class="p">.</span><span class="n">ofEurope</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>just(_:)</code>表明<code>Observable</code>持有的值（value）是不变的。</p>
+<blockquote>
+<p>注：对于不变化的值，是没有必要使用响应式编程的。所以在实际应用中，要避免拿着锤子看什么都是钉子，要实际分析一下你是否真的需要使用Rx。</p>
+</blockquote>
+<p>第三步在<code>//MARK: - Rx Setup</code>添加如下代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">setupCellConfiguration</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">//1</span>
+</span></span><span class="line"><span class="cl">  <span class="n">europeanChocolates</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">bind</span><span class="p">(</span><span class="n">to</span><span class="p">:</span> <span class="n">tableView</span>
+</span></span><span class="line"><span class="cl">      <span class="p">.</span><span class="n">rx</span> <span class="c1">//2</span>
+</span></span><span class="line"><span class="cl">      <span class="p">.</span><span class="n">items</span><span class="p">(</span><span class="n">cellIdentifier</span><span class="p">:</span> <span class="n">ChocolateCell</span><span class="p">.</span><span class="n">Identifier</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">             <span class="n">cellType</span><span class="p">:</span> <span class="n">ChocolateCell</span><span class="p">.</span><span class="kc">self</span><span class="p">))</span> <span class="p">{</span> <span class="c1">//3</span>
+</span></span><span class="line"><span class="cl">              <span class="n">row</span><span class="p">,</span> <span class="n">chocolate</span><span class="p">,</span> <span class="n">cell</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">              <span class="n">cell</span><span class="p">.</span><span class="n">configureWithChocolate</span><span class="p">(</span><span class="n">chocolate</span><span class="p">:</span> <span class="n">chocolate</span><span class="p">)</span> <span class="c1">//4</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">disposed</span><span class="p">(</span><span class="n">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span> <span class="c1">//5</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>代码释义：</p>
+<ol>
+<li>
+<p>调用<code>bind(to:)</code>将europeanChocolates这个Observable关联到table view每行所要执行的代码上</p>
+</li>
+<li>
+<p>调用rx后，让你可以访问table view的Rx扩展</p>
+</li>
+<li>
+<p>代用Rx方法<code>items(cellIdentifier:cellType:)</code>传递相关参数。这样Rx框架根据这些信息实现一个wrapper data source，再设置给table view。</p>
+</li>
+<li>
+<p>当拿到了新的cell item时，通过这个block来进行设置</p>
+</li>
+<li>
+<p>将bind方法结果加入到disposeBag</p>
+</li>
+</ol>
+<p>再在viewDidLoad中调用下上面的<code>setupCellConfiguration()</code>方法。</p>
+<p>这时运行程序，就会再次看到巧克力列表数据。</p>
+<p><img src="./initial_landing-282x500.png" alt="initial state"></p>
+<p>第四步来添加事件处理：</p>
+<p>在<code>//MARK: - Rx Setup</code>位置添加如下代码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">setupCellTapHandling</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">tableView</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">rx</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">modelSelected</span><span class="p">(</span><span class="n">Chocolate</span><span class="p">.</span><span class="kc">self</span><span class="p">)</span> <span class="c1">//1</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">onNext</span><span class="p">:</span> <span class="p">{</span> <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="n">chocolate</span> <span class="k">in</span> <span class="c1">// 2</span>
+</span></span><span class="line"><span class="cl">      <span class="kd">let</span> <span class="nv">newValue</span> <span class="p">=</span>  <span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span><span class="p">.</span><span class="n">value</span> <span class="o">+</span> <span class="p">[</span><span class="n">chocolate</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">      <span class="n">ShoppingCart</span><span class="p">.</span><span class="n">sharedCart</span><span class="p">.</span><span class="n">chocolates</span><span class="p">.</span><span class="n">accept</span><span class="p">(</span><span class="n">newValue</span><span class="p">)</span> <span class="c1">//3</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="k">if</span> <span class="kd">let</span> <span class="nv">selectedRowIndexPath</span> <span class="p">=</span> <span class="kc">self</span><span class="p">.</span><span class="n">tableView</span><span class="p">.</span><span class="n">indexPathForSelectedRow</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kc">self</span><span class="p">.</span><span class="n">tableView</span><span class="p">.</span><span class="n">deselectRow</span><span class="p">(</span><span class="n">at</span><span class="p">:</span> <span class="n">selectedRowIndexPath</span><span class="p">,</span> <span class="n">animated</span><span class="p">:</span> <span class="kc">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span> <span class="c1">//4</span>
+</span></span><span class="line"><span class="cl">    <span class="p">})</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">disposed</span><span class="p">(</span><span class="n">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span> <span class="c1">//5</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>代码释义：</p>
+<ol>
+<li>
+<p><code>modelSelected(_:)</code>传入Chocolate model类型，得到Observable对象</p>
+</li>
+<li>
+<p><code>subscribe(onNext:)</code>是给Observable对象注册事件处理，这个闭包代码会在一个model被选中时调用</p>
+</li>
+<li>
+<p>闭包中首先将选中的chocolate加入到购物车</p>
+</li>
+<li>
+<p>反选table row</p>
+</li>
+<li>
+<p>将<code>subscribe(onNext:)</code>返回的<code>Disposable</code>加入到<code>disposeBag</code></p>
+</li>
+</ol>
+<p>最后在viewDidLoad中调用<code>setupCellTapHandling()</code></p>
+<p>然后运行，就可以看到经过Rx API重写过的样例功能，和之前一样：点击列表中的巧克力，将他们添加到购物车中。</p>
+<h2 id="使用rxswift处理用户输入direct-text-input">使用RxSwift处理用户输入（Direct Text Input）</h2>
+<p>RxSwift也可以用来处理用户输入和表单验证。</p>
+<p>非Reactive的做法是，实现UITextFieldDelegate，然后实现很多if/else来分别处理输入及其对应的动作。</p>
+<p>Reactive Programming的做法则是更直接地将输入处理动作和逻辑绑定到input field上。</p>
+<p>我们可以通过下面这个例子来具体体会一下。</p>
+<p>先在<strong>BillingInfoViewController.swift</strong>中创建一个<code>DisposeBag</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">private</span> <span class="kd">let</span> <span class="nv">disposeBag</span> <span class="p">=</span> <span class="n">DisposeBag</span><span class="p">()</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后在<code>//MARK: - Rx Setup</code>评论下的extension中添加如下代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">setupCardImageDisplay</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">cardType</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">asObservable</span><span class="p">()</span> <span class="c1">//1</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">onNext</span><span class="p">:</span> <span class="p">{</span> <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="n">cardType</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">      <span class="kc">self</span><span class="p">.</span><span class="n">creditCardImageView</span><span class="p">.</span><span class="n">image</span> <span class="p">=</span> <span class="n">cardType</span><span class="p">.</span><span class="n">image</span>
+</span></span><span class="line"><span class="cl">    <span class="p">})</span> <span class="c1">//2</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">disposed</span><span class="p">(</span><span class="n">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span> <span class="c1">//3</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>代码释义：</p>
+<ol>
+<li>
+<p>给<code>BehaviorRelay</code>的值添加一个<code>Observable</code></p>
+</li>
+<li>
+<p>订阅这个<code>Observable</code>来获得<code>cardType</code>的变化</p>
+</li>
+<li>
+<p>将<code>Observer</code>的销毁交给<code>disposeBag</code></p>
+</li>
+</ol>
+<p>上述代码就实现了一个Reactive的例子：当cardType变化时，creditCardImageView的图片会变成对应type定义的图片。接下来实现对文字变化的处理。</p>
+<p>考虑到用户输入可能会很快，如果每次输入都执行验证代码可能会导致UI卡顿。所以我们需要实现一个throttle来控制，在throttle的时间间隔后才会再次验证输入，这样就可以避免对UI的阻塞。</p>
+<p>RxSwift是支持Throttling的，因为有不少场景需要控制对变化的响应频次。下面我们来看看如何实现。</p>
+<p>首先，在BillingInfoViewController中定义一个常量来表示throttle的间隔毫秒时间：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">private</span> <span class="kd">let</span> <span class="nv">throttleIntervalInMilliseconds</span> <span class="p">=</span> <span class="mi">100</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后，在RX Setup extension中加入下面的代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">setupTextChangeHandling</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">let</span> <span class="nv">creditCardValid</span> <span class="p">=</span> <span class="n">creditCardNumberTextField</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">rx</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">text</span> <span class="c1">//1</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">observeOn</span><span class="p">(</span><span class="n">MainScheduler</span><span class="p">.</span><span class="n">asyncInstance</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">distinctUntilChanged</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">throttle</span><span class="p">(.</span><span class="n">milliseconds</span><span class="p">(</span><span class="n">throttleIntervalInMilliseconds</span><span class="p">),</span> <span class="n">scheduler</span><span class="p">:</span> <span class="n">MainScheduler</span><span class="p">.</span><span class="n">instance</span><span class="p">)</span> <span class="c1">//2</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="bp">map</span> <span class="p">{</span> <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">      <span class="kc">self</span><span class="p">.</span><span class="n">validate</span><span class="p">(</span><span class="n">cardText</span><span class="p">:</span> <span class="nv">$0</span><span class="p">)</span> <span class="c1">//3</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">  <span class="n">creditCardValid</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">onNext</span><span class="p">:</span> <span class="p">{</span> <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">      <span class="kc">self</span><span class="p">.</span><span class="n">creditCardNumberTextField</span><span class="p">.</span><span class="n">valid</span> <span class="p">=</span> <span class="nv">$0</span> <span class="c1">//4</span>
+</span></span><span class="line"><span class="cl">    <span class="p">})</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="n">disposed</span><span class="p">(</span><span class="n">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span> <span class="c1">//5</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>代码释义：</p>
+<ol>
+<li>
+<p>text是RxCocoa的扩展，它从一个UITextField获得其value的一个Observable</p>
+</li>
+<li>
+<p>基于之前定义的throttle时间间隔，创建一个throttle；scheduler目前先绑定到主线程</p>
+</li>
+<li>
+<p>将结果交由给<code>validate(cardText:)</code>，它可以将输入转换为creditCardValid的值，如果输入有效，creditCardValid的值会是true</p>
+</li>
+<li>
+<p>监听creditCardValid，根据其结果来改变text field的状态</p>
+</li>
+<li>
+<p>销毁事宜</p>
+</li>
+</ol>
+<p>实现CVV的校验和上述思路一样。</p>
+<p>先在<code>setupTextChangeHandling()</code>底部添加如下代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">expirationValid</span> <span class="p">=</span> <span class="n">expirationDateTextField</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">rx</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">text</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">observeOn</span><span class="p">(</span><span class="n">MainScheduler</span><span class="p">.</span><span class="n">asyncInstance</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">distinctUntilChanged</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">throttle</span><span class="p">(.</span><span class="n">milliseconds</span><span class="p">(</span><span class="n">throttleIntervalInMilliseconds</span><span class="p">),</span> <span class="n">scheduler</span><span class="p">:</span> <span class="n">MainScheduler</span><span class="p">.</span><span class="n">instance</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="bp">map</span> <span class="p">{</span> <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="kc">self</span><span class="p">.</span><span class="n">validate</span><span class="p">(</span><span class="n">expirationDateText</span><span class="p">:</span> <span class="nv">$0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="n">expirationValid</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">onNext</span><span class="p">:</span> <span class="p">{</span> <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="kc">self</span><span class="p">.</span><span class="n">expirationDateTextField</span><span class="p">.</span><span class="n">valid</span> <span class="p">=</span> <span class="nv">$0</span>
+</span></span><span class="line"><span class="cl">  <span class="p">})</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">disposed</span><span class="p">(</span><span class="n">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">cvvValid</span> <span class="p">=</span> <span class="n">cvvTextField</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">rx</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">text</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">observeOn</span><span class="p">(</span><span class="n">MainScheduler</span><span class="p">.</span><span class="n">asyncInstance</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">distinctUntilChanged</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="bp">map</span> <span class="p">{</span> <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="kc">self</span><span class="p">.</span><span class="n">validate</span><span class="p">(</span><span class="n">cvvText</span><span class="p">:</span> <span class="nv">$0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="n">cvvValid</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">onNext</span><span class="p">:</span> <span class="p">{</span> <span class="p">[</span><span class="kr">unowned</span> <span class="kc">self</span><span class="p">]</span> <span class="k">in</span>
+</span></span><span class="line"><span class="cl">    <span class="kc">self</span><span class="p">.</span><span class="n">cvvTextField</span><span class="p">.</span><span class="n">valid</span> <span class="p">=</span> <span class="nv">$0</span>
+</span></span><span class="line"><span class="cl">  <span class="p">})</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">disposed</span><span class="p">(</span><span class="n">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最后，将三个text field结合起来做验证，在<code>setupTextChangeHandling()</code>加入以下代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="kd">let</span> <span class="nv">everythingValid</span> <span class="p">=</span> <span class="n">Observable</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">combineLatest</span><span class="p">(</span><span class="n">creditCardValid</span><span class="p">,</span> <span class="n">expirationValid</span><span class="p">,</span> <span class="n">cvvValid</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$0</span> <span class="o">&amp;&amp;</span> <span class="nv">$1</span> <span class="o">&amp;&amp;</span> <span class="nv">$2</span> <span class="c1">//All must be true</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="n">everythingValid</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">bind</span><span class="p">(</span><span class="n">to</span><span class="p">:</span> <span class="n">purchaseButton</span><span class="p">.</span><span class="n">rx</span><span class="p">.</span><span class="n">isEnabled</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="n">disposed</span><span class="p">(</span><span class="n">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>combineLatest(_:)</code>将三个observable结合到一起再生成一个observable，everythingValid的值会是true或false。接着再讲everythingValid关联到purchaseButton的rx扩展属性isEnabled，以此来实现对该button是否可用状态的控制。</p>
+<p>最后，在viewDidLoad中添加如下代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-swift" data-lang="swift"><span class="line"><span class="cl"><span class="n">setupCardImageDisplay</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="n">setupTextChangeHandling</span><span class="p">()</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>运行代码，然后选择巧克力后，进入购物车：</p>
+<p><img src="./checkout-282x500.png" alt="checkout"></p>
+<p>然后点击checkout，进行支付界面：</p>
+<p><img src="./visa-282x500.png" alt="Visa"></p>
+<p>这里可以看到，输入4，后面图标就显示了visa的图标。</p>
+<p>接着，输入合法的CVV和有效期限，Buy Chocolate按钮就是可用状态了：</p>
+<p><img src="./enabled_checkout-282x500.png" alt="enabled_checkout"></p>
+<p>至此，我们就实现了一个简单的对用户输入以reactive方式进行校验的示例。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-06
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/ios/">iOS</a>
+          <a href="/tags/rxswift/">RxSwift</a>
+          <a href="/tags/rxcocoa/">RxCocoa</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/intercept_touch_event_in_ios/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">iOS touch事件的拦截</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/lex_fridman_learn_and_master_a_skill_note/">
+            <span class="next-text nav-default">Lex Fridman: How to learn and master a new skill简评</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

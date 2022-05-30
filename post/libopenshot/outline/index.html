@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>专题-从libopenshot学习视频编辑器 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="libopenshot简介 libopenshot是OpenShot这款桌面软件的编辑库，其包含的功能有： Cross-Platform (Linux, Mac, and Windows) &amp;ndash; 跨平台。我使用Windo" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/libopenshot/outline/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="专题-从libopenshot学习视频编辑器" />
+<meta property="og:description" content="libopenshot简介 libopenshot是OpenShot这款桌面软件的编辑库，其包含的功能有： Cross-Platform (Linux, Mac, and Windows) &ndash; 跨平台。我使用Windo" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/libopenshot/outline/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-07-30T15:28:28+08:00" />
+<meta property="article:modified_time" content="2021-07-30T15:28:28+08:00" />
+
+<meta itemprop="name" content="专题-从libopenshot学习视频编辑器">
+<meta itemprop="description" content="libopenshot简介 libopenshot是OpenShot这款桌面软件的编辑库，其包含的功能有： Cross-Platform (Linux, Mac, and Windows) &ndash; 跨平台。我使用Windo"><meta itemprop="datePublished" content="2021-07-30T15:28:28+08:00" />
+<meta itemprop="dateModified" content="2021-07-30T15:28:28+08:00" />
+<meta itemprop="wordCount" content="688">
+<meta itemprop="keywords" content="C&#43;&#43;,libopenshot,video-editing,video-processing,video-effects," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="专题-从libopenshot学习视频编辑器"/>
+<meta name="twitter:description" content="libopenshot简介 libopenshot是OpenShot这款桌面软件的编辑库，其包含的功能有： Cross-Platform (Linux, Mac, and Windows) &ndash; 跨平台。我使用Windo"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">专题-从libopenshot学习视频编辑器</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-07-30 </span>
+        <div class="post-category">
+            <a href="/categories/av/"> AV </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#libopenshot简介">libopenshot简介</a></li>
+    <li><a href="#专题">专题</a>
+      <ul>
+        <li><a href="#介绍">介绍</a></li>
+        <li><a href="#文章列表">文章列表</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="libopenshot简介">libopenshot简介</h1>
+<p><a href="https://github.com/OpenShot/libopenshot">libopenshot</a>是<a href="https://www.openshot.org/">OpenShot</a>这款桌面软件的编辑库，其包含的功能有：</p>
+<ul>
+<li>Cross-Platform (Linux, Mac, and Windows) &ndash; 跨平台。我使用Windows的编辑软件剪辑过几次视频，功能没有Adobe Premiere那么多，但基本的视频剪辑是够用。由于我对这个领域不是很懂，细节上的优劣暂时还比较不出来。</li>
+<li>Multi-Layer Compositing &ndash; 多图层合并</li>
+<li>Video and Audio Effects (Chroma Key, Color Adjustment, Grayscale, etc…) &ndash; 视频、音频的特效</li>
+<li>Animation Curves (Bézier, Linear, Constant) &ndash; 动画曲线(贝塞尔、线性、常量)</li>
+<li>Time Mapping (Curve-based Slow Down, Speed Up, Reverse) &ndash; 时间映射(基于曲线的慢速、倍速、反转)</li>
+<li>Audio Mixing &amp; Resampling (Curve-based) &ndash; 音频混合和重采样(基于曲线的)</li>
+<li><a href="https://en.wikipedia.org/wiki/Audio_plug-in">Audio Plug-ins</a> (VST &amp; AU) &ndash; 音频增效插件</li>
+<li>Audio Drivers (ASIO, WASAPI, DirectSound, CoreAudio, iPhone Audio, ALSA, JACK, and Android) &ndash; 音频驱动，由JUCE提供支持</li>
+<li><a href="https://en.wikipedia.org/wiki/Telecine">Telecine</a> and Inverse Telecine (Film to TV, TV to Film) &ndash; 不知道这个怎么翻译，它的意思是两种格式互转，因为电影的帧率和色彩与视频不同，所以要进行互转</li>
+<li>Frame Rate Conversions &ndash; 帧率转换</li>
+<li>Multi-Processor Support (Performance) &ndash; 多处理器支持，使用的是OpenMP</li>
+<li>Python and Ruby Bindings (All Features Supported) &ndash; Python/Ruby的API，使用<a href="http://www.swig.org/">swig</a>实现</li>
+<li>Qt Video Player Included (Ability to display video on any QWidget) &ndash; 包含Qt视频播放器</li>
+<li>Unit Tests (Stability)</li>
+<li>All FFmpeg Formats and Codecs Supported (Images, Videos, and Audio files) &ndash; 编解码这部分使用的是FFmpeg</li>
+<li>Full Documentation with Examples (Doxygen Generated) &ndash; 文档 &amp; 样例</li>
+</ul>
+<p>OpenShot可以理解为在libopenshot的基础上，用Qt实现用户界面以及相应功能的桌面软件。它的工作界面如下图：</p>
+<p><img src="../OpenShotWorkScreen.png" alt="OpenShot Work Screen"></p>
+<h1 id="专题">专题</h1>
+<h2 id="介绍">介绍</h2>
+<p>本专题试图通过一系列文章介绍libopenshot这个开源项目，并学习以下内容点：</p>
+<ul>
+<li>跨平台c++开发</li>
+<li>音视频编辑功能的实现
+<ul>
+<li>编解码器</li>
+<li>Timeline</li>
+<li>Clip</li>
+<li>音频播放</li>
+<li>视频播放</li>
+<li>视频/音频帧的管理、控制</li>
+<li>关键帧</li>
+<li>视频效果</li>
+<li>音频效果</li>
+<li>曲线动画</li>
+</ul>
+</li>
+</ul>
+<h2 id="文章列表">文章列表</h2>
+<ul>
+<li><a href="../build">编译</a></li>
+<li><a href="../concept-and-player-impl">基本概念与播放器的实现</a></li>
+<li><a href="../timeline">Timeline和Clip中的Frame合成</a></li>
+<li><a href="../effect-transition">视频特效和曲线动画</a></li>
+<li>TBD</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-07-30
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/c&#43;&#43;/">C&#43;&#43;</a>
+          <a href="/tags/libopenshot/">libopenshot</a>
+          <a href="/tags/video-editing/">video-editing</a>
+          <a href="/tags/video-processing/">video-processing</a>
+          <a href="/tags/video-effects/">video-effects</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/libopenshot/timeline/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">libopenshot-Timeline和Clip中的Frame合成</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/libopenshot/concept-and-player-impl/">
+            <span class="next-text nav-default">libopenshot-基本概念以及播放器实现</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

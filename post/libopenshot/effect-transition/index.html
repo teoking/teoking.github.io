@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>libopenshot-Effect,KeyFrame和Transition - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="Effect 上图展示了在OpenShot中给视频添加了Wave这个效果： 选择Effect拖拽到对应clip上 选择效果图标，可以看到effect属性修改" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/libopenshot/effect-transition/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="libopenshot-Effect,KeyFrame和Transition" />
+<meta property="og:description" content="Effect 上图展示了在OpenShot中给视频添加了Wave这个效果： 选择Effect拖拽到对应clip上 选择效果图标，可以看到effect属性修改" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/libopenshot/effect-transition/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-08-04T19:31:05+08:00" />
+<meta property="article:modified_time" content="2021-08-04T19:31:05+08:00" />
+
+<meta itemprop="name" content="libopenshot-Effect,KeyFrame和Transition">
+<meta itemprop="description" content="Effect 上图展示了在OpenShot中给视频添加了Wave这个效果： 选择Effect拖拽到对应clip上 选择效果图标，可以看到effect属性修改"><meta itemprop="datePublished" content="2021-08-04T19:31:05+08:00" />
+<meta itemprop="dateModified" content="2021-08-04T19:31:05+08:00" />
+<meta itemprop="wordCount" content="2902">
+<meta itemprop="keywords" content="C&#43;&#43;,libopenshot,video-editing,video-processing,video-effects," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="libopenshot-Effect,KeyFrame和Transition"/>
+<meta name="twitter:description" content="Effect 上图展示了在OpenShot中给视频添加了Wave这个效果： 选择Effect拖拽到对应clip上 选择效果图标，可以看到effect属性修改"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">libopenshot-Effect,KeyFrame和Transition</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-08-04 </span>
+        <div class="post-category">
+            <a href="/categories/av/"> AV </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#effect">Effect</a></li>
+    <li><a href="#keyframe">KeyFrame</a></li>
+    <li><a href="#transition">Transition</a></li>
+    <li><a href="#总结">总结</a></li>
+    <li><a href="#参考资料">参考资料</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="effect">Effect</h1>
+<p><img src="../effect-wave2.png" alt="Wave Effect"></p>
+<p>上图展示了在OpenShot中给视频添加了Wave这个效果：</p>
+<ol>
+<li>选择Effect拖拽到对应clip上</li>
+<li>选择效果图标，可以看到effect属性修改界面</li>
+<li>更改effect属性</li>
+<li>在预览界面就可以看到应用effect后的适配效果</li>
+</ol>
+<p>在libopenshot中，effect是作用到frame上的。我们可以给Timeline和Clip添加一个或多个effect，当Timeline和Clip要去获取frame时，会遍历所有effect对frame进行应用。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Apply effects to the source frame (if any)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">Clip</span><span class="o">::</span><span class="n">apply_effects</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Frame</span><span class="o">&gt;</span> <span class="n">frame</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Find Effects at this position and layer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">effect</span> <span class="p">:</span> <span class="n">effects</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Apply the effect to this frame
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="n">frame</span> <span class="o">=</span> <span class="n">effect</span><span class="o">-&gt;</span><span class="n">GetFrame</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">frame</span><span class="o">-&gt;</span><span class="n">number</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="c1">// end effect loop
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Wave这个effect的实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// This method is required for all derived classes of EffectBase, and returns a
+</span></span></span><span class="line"><span class="cl"><span class="c1">// modified openshot::Frame object
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">openshot</span><span class="o">::</span><span class="n">Frame</span><span class="o">&gt;</span> <span class="n">Wave</span><span class="o">::</span><span class="n">GetFrame</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">openshot</span><span class="o">::</span><span class="n">Frame</span><span class="o">&gt;</span> <span class="n">frame</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">frame_number</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Get the frame&#39;s image
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">QImage</span><span class="o">&gt;</span> <span class="n">frame_image</span> <span class="o">=</span> <span class="n">frame</span><span class="o">-&gt;</span><span class="n">GetImage</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Get original pixels for frame image, and also make a copy for editing
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">const</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">original_pixels</span> <span class="o">=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="p">)</span> <span class="n">frame_image</span><span class="o">-&gt;</span><span class="n">constBits</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">pixels</span> <span class="o">=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="p">)</span> <span class="n">frame_image</span><span class="o">-&gt;</span><span class="n">bits</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">pixel_count</span> <span class="o">=</span> <span class="n">frame_image</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">()</span> <span class="o">*</span> <span class="n">frame_image</span><span class="o">-&gt;</span><span class="n">height</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Get current keyframe values
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kt">double</span> <span class="n">time</span> <span class="o">=</span> <span class="n">frame_number</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">double</span> <span class="n">wavelength_value</span> <span class="o">=</span> <span class="n">wavelength</span><span class="p">.</span><span class="n">GetValue</span><span class="p">(</span><span class="n">frame_number</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">double</span> <span class="n">amplitude_value</span> <span class="o">=</span> <span class="n">amplitude</span><span class="p">.</span><span class="n">GetValue</span><span class="p">(</span><span class="n">frame_number</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">double</span> <span class="n">multiplier_value</span> <span class="o">=</span> <span class="n">multiplier</span><span class="p">.</span><span class="n">GetValue</span><span class="p">(</span><span class="n">frame_number</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">double</span> <span class="n">shift_x_value</span> <span class="o">=</span> <span class="n">shift_x</span><span class="p">.</span><span class="n">GetValue</span><span class="p">(</span><span class="n">frame_number</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">double</span> <span class="n">speed_y_value</span> <span class="o">=</span> <span class="n">speed_y</span><span class="p">.</span><span class="n">GetValue</span><span class="p">(</span><span class="n">frame_number</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Loop through pixels
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 对wave算法开启并行计算
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="cp">#pragma omp parallel for
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">pixel</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">pixel</span> <span class="o">&lt;</span> <span class="n">pixel_count</span><span class="p">;</span> <span class="o">++</span><span class="n">pixel</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Calculate pixel Y value
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">int</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">pixel</span> <span class="o">/</span> <span class="n">frame_image</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Calculate wave pixel offsets
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">float</span> <span class="n">noiseVal</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">+</span> <span class="n">Y</span> <span class="o">*</span> <span class="mf">0.001</span><span class="p">)</span> <span class="o">*</span> <span class="n">multiplier_value</span><span class="p">;</span>  <span class="c1">// Time and time multiplier (to make the wave move)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">float</span> <span class="n">noiseAmp</span> <span class="o">=</span> <span class="n">noiseVal</span> <span class="o">*</span> <span class="n">amplitude_value</span><span class="p">;</span>  <span class="c1">// Apply amplitude / height of the wave
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">float</span> <span class="n">waveformVal</span> <span class="o">=</span> <span class="n">sin</span><span class="p">((</span><span class="n">Y</span> <span class="o">*</span> <span class="n">wavelength_value</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">time</span> <span class="o">*</span> <span class="n">speed_y_value</span><span class="p">));</span>  <span class="c1">// Waveform algorithm on y-axis
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">float</span> <span class="n">waveVal</span> <span class="o">=</span> <span class="p">(</span><span class="n">waveformVal</span> <span class="o">+</span> <span class="n">shift_x_value</span><span class="p">)</span> <span class="o">*</span> <span class="n">noiseAmp</span><span class="p">;</span>  <span class="c1">// Shifts pixels on the x-axis
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">		<span class="kt">long</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">source_px</span> <span class="o">=</span> <span class="n">round</span><span class="p">(</span><span class="n">pixel</span> <span class="o">+</span> <span class="n">waveVal</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">source_px</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="n">source_px</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">source_px</span> <span class="o">&gt;=</span> <span class="n">pixel_count</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="n">source_px</span> <span class="o">=</span> <span class="n">pixel_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Calculate source array location, and target array location, and copy the 4 color values
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pixels</span><span class="p">[</span><span class="n">pixel</span> <span class="o">*</span> <span class="mi">4</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">original_pixels</span><span class="p">[</span><span class="n">source_px</span> <span class="o">*</span> <span class="mi">4</span><span class="p">],</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">char</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// return the modified frame
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">return</span> <span class="n">frame</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>其余的Effect：</p>
+<p><img src="../effect-classes.png" alt="Effect classes"></p>
+<p>通过对Effect代码和OpenShot中effect的观察，可以总结出以下几点：</p>
+<ul>
+<li>Effect都是对图像处理算法的实现，不同算法支持的参数是不同的，这也体现在更改effect属性界面中</li>
+<li>effect算法都是CPU实现的，没有使用shader（感觉shader实现会要比CPU实现要快，即便是开启了OMP）</li>
+<li>Timeline和Clip都支持AddEffect接口，但在OpenShot中，并不能直接给Timeline添加effect，只支持通过拖拽操作给Clip添加effect</li>
+</ul>
+<h1 id="keyframe">KeyFrame</h1>
+<p>在libopenshot中，KeyFrame用以控制实现曲线动画。（KeyFrame的概念可以见参考资料2）</p>
+<p>我们先定义一个KeyFrame：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">Keyframe</span> <span class="n">k1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">k1</span><span class="p">.</span><span class="n">AddPoint</span><span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="n">BEZIER</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="n">k1</span><span class="p">.</span><span class="n">AddPoint</span><span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span> <span class="n">BEZIER</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="n">k1</span><span class="p">.</span><span class="n">PrintValues</span><span class="p">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>Keyframe::PrintValues()</code>可以把当前KeyFrame中所有的点都计算并打印出来。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">Frame Number <span class="o">(</span>X<span class="o">)</span>	Value <span class="o">(</span>Y<span class="o">)</span>	Is Increasing	Repeat Numerator	Repeat Denominator	Delta <span class="o">(</span>Y Difference<span class="o">)</span>
+</span></span><span class="line"><span class="cl">1	0.0000	1	1	6	0.0000
+</span></span><span class="line"><span class="cl">2	0.0140	1	2	6	0.0000
+</span></span><span class="line"><span class="cl">3	0.0556	1	3	6	0.0000
+</span></span><span class="line"><span class="cl">4	0.1259	1	4	6	0.0000
+</span></span><span class="line"><span class="cl">5	0.2261	1	5	6	0.0000
+</span></span><span class="line"><span class="cl">6	0.3571	1	6	6	0.0000
+</span></span><span class="line"><span class="cl">7	0.5171	1	1	5	1.0000
+</span></span><span class="line"><span class="cl">8	0.7125	1	2	5	0.0000
+</span></span><span class="line"><span class="cl">9	0.9379	1	3	5	0.0000
+</span></span><span class="line"><span class="cl">10	1.1971	1	4	5	0.0000
+</span></span><span class="line"><span class="cl">11	1.4912	1	5	5	0.0000
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们把x、y列的值用图标展示：</p>
+<p><img src="../keyframe-bezier.png" alt="KeyFrame Bezier"></p>
+<p>从这张图就可以看到，上述KeyFrame代码，实际上就是实现了一个以Bezier曲线作为差值器的关键帧。当动画中的某个属性在空间或时间上使用该变化曲线函数进行计算，那么其结果就会是这样平滑变化的效果。这样就在视觉上得到了平滑过渡的曲线动画。</p>
+<p>我们对上面的代码进行一些修改，将50~100这些点改为使用LINEAR差值：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">Keyframe</span> <span class="n">k1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">k1</span><span class="p">.</span><span class="n">AddPoint</span><span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="n">BEZIER</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="n">k1</span><span class="p">.</span><span class="n">AddPoint</span><span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span> <span class="n">BEZIER</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="n">k1</span><span class="p">.</span><span class="n">AddPoint</span><span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span> <span class="n">LINEAR</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="n">k1</span><span class="p">.</span><span class="n">PrintValues</span><span class="p">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>再看得到的曲线图：</p>
+<p><img src="../keyframe-bezier-linear.png" alt="KeyFrame Bezier Linear"></p>
+<p>可以看出，后半段从曲线变为了直线，这是因为后半段使用了线性差值。</p>
+<p>KeyFrame还支持通过设置控制点来改变贝塞尔曲线变化的程度，见<code>Point::handle_right</code>和<code>Point::handle_left</code>。</p>
+<h1 id="transition">Transition</h1>
+<p>OpenShot的Transition功能并不在libopenshot里，而是在<a href="https://github.com/OpenShot/openshot-qt">openshot-qt</a>这个仓库里。</p>
+<p>openshot-qt是一个不小的工程，其主要功能由Python3实现，但也有小部分代码使用JavaScript。我们这里只关注transition的使用流程。</p>
+<p>方法调用链：</p>
+<p><em>拖动transition到clip</em></p>
+<p>​	&ndash;&gt; dropEvent (webview.py)</p>
+<p>​		&ndash;&gt; updateRecentItemJson (controllers.js)</p>
+<p>​			&ndash;&gt; update_transition_data (webview.py)</p>
+<p>​				&ndash;&gt; refresh window (webview.py)</p>
+<p>​					&ndash;&gt; refreshFrame (preview_thread.py)</p>
+<p>​						&ndash;&gt; Seek(self.player.Position()). (preview_thread.py)</p>
+<p>​							&ndash;&gt; QtPlayer.seek()</p>
+<p>我们再看一下，这个transition data到底是什么：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;id&#34;</span><span class="p">:</span><span class="s2">&#34;A9Q6YAC8A5&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;layer&#34;</span><span class="p">:</span><span class="mi">3000000</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;title&#34;</span><span class="p">:</span><span class="s2">&#34;Transition&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span><span class="s2">&#34;Mask&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;position&#34;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;start&#34;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;end&#34;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;brightness&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;Points&#34;</span><span class="p">:[</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;co&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;X&#34;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;Y&#34;</span><span class="p">:</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;handle_left&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;X&#34;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;Y&#34;</span><span class="p">:</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;handle_right&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;X&#34;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;Y&#34;</span><span class="p">:</span><span class="mi">0</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;handle_type&#34;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;interpolation&#34;</span><span class="p">:</span><span class="mi">0</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;co&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;X&#34;</span><span class="p">:</span><span class="mi">301</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;Y&#34;</span><span class="p">:</span><span class="mi">-1</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;handle_left&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;X&#34;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;Y&#34;</span><span class="p">:</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;handle_right&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;X&#34;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;Y&#34;</span><span class="p">:</span><span class="mi">0</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;handle_type&#34;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;interpolation&#34;</span><span class="p">:</span><span class="mi">0</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;contrast&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;Points&#34;</span><span class="p">:[</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;co&#34;</span><span class="p">:{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;X&#34;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="nt">&#34;Y&#34;</span><span class="p">:</span><span class="mi">3</span>
+</span></span><span class="line"><span class="cl">                <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="nt">&#34;interpolation&#34;</span><span class="p">:</span><span class="mi">2</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="err">#</span> <span class="err">...</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们看到<code>&quot;type&quot;:&quot;Mask&quot;</code>，也就是说transition实际上是使用Mask特效实现的。因此我们回过头再去看Mask这个特效实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Mask.h
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="n">Keyframe</span> <span class="n">brightness</span><span class="p">;</span>	<span class="c1">///&lt; Brightness keyframe to control the wipe / mask effect. A constant value here will prevent animation.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="n">Keyframe</span> <span class="n">contrast</span><span class="p">;</span>		<span class="c1">///&lt; Contrast keyframe to control the hardness of the wipe effect / mask.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">// Mask.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 需要三个构造参数
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Default constructor
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Mask</span><span class="o">::</span><span class="n">Mask</span><span class="p">(</span><span class="n">ReaderBase</span> <span class="o">*</span><span class="n">mask_reader</span><span class="p">,</span> <span class="n">Keyframe</span> <span class="n">mask_brightness</span><span class="p">,</span> <span class="n">Keyframe</span> <span class="n">mask_contrast</span><span class="p">)</span> <span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">reader</span><span class="p">(</span><span class="n">mask_reader</span><span class="p">),</span> <span class="n">brightness</span><span class="p">(</span><span class="n">mask_brightness</span><span class="p">),</span> <span class="n">contrast</span><span class="p">(</span><span class="n">mask_contrast</span><span class="p">),</span> <span class="n">replace_image</span><span class="p">(</span><span class="nb">false</span><span class="p">),</span> <span class="n">needs_refresh</span><span class="p">(</span><span class="nb">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Init effect properties
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">init_effect_details</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// This method is required for all derived classes of EffectBase, and returns a
+</span></span></span><span class="line"><span class="cl"><span class="c1">// modified openshot::Frame object
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">openshot</span><span class="o">::</span><span class="n">Frame</span><span class="o">&gt;</span> <span class="n">Mask</span><span class="o">::</span><span class="n">GetFrame</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">openshot</span><span class="o">::</span><span class="n">Frame</span><span class="o">&gt;</span> <span class="n">frame</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">frame_number</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Get the mask image (from the mask reader)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">QImage</span><span class="o">&gt;</span> <span class="n">frame_image</span> <span class="o">=</span> <span class="n">frame</span><span class="o">-&gt;</span><span class="n">GetImage</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="kt">double</span> <span class="n">contrast_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">contrast</span><span class="p">.</span><span class="n">GetValue</span><span class="p">(</span><span class="n">frame_number</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">double</span> <span class="n">brightness_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">brightness</span><span class="p">.</span><span class="n">GetValue</span><span class="p">(</span><span class="n">frame_number</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Loop through mask pixels, and apply average gray value to frame alpha channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">pixel</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">byte_index</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">pixel</span> <span class="o">&lt;</span> <span class="n">original_mask</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">()</span> <span class="o">*</span> <span class="n">original_mask</span><span class="o">-&gt;</span><span class="n">height</span><span class="p">();</span> <span class="n">pixel</span><span class="o">++</span><span class="p">,</span> <span class="n">byte_index</span><span class="o">+=</span><span class="mi">4</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="c1">// Get the RGB values from the pixel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">int</span> <span class="n">R</span> <span class="o">=</span> <span class="n">mask_pixels</span><span class="p">[</span><span class="n">byte_index</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">int</span> <span class="n">G</span> <span class="o">=</span> <span class="n">mask_pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">int</span> <span class="n">B</span> <span class="o">=</span> <span class="n">mask_pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">int</span> <span class="n">A</span> <span class="o">=</span> <span class="n">mask_pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">3</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Get the average luminosity
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">int</span> <span class="n">gray_value</span> <span class="o">=</span> <span class="n">qGray</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">B</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Adjust the contrast
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">float</span> <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span><span class="mi">259</span> <span class="o">*</span> <span class="p">(</span><span class="n">contrast_value</span> <span class="o">+</span> <span class="mi">255</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="p">(</span><span class="mi">259</span> <span class="o">-</span> <span class="n">contrast_value</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		<span class="n">gray_value</span> <span class="o">=</span> <span class="n">constrain</span><span class="p">((</span><span class="n">factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">gray_value</span> <span class="o">-</span> <span class="mi">128</span><span class="p">))</span> <span class="o">+</span> <span class="mi">128</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Adjust the brightness
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="n">gray_value</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="n">brightness_value</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Constrain the value from 0 to 255
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="n">gray_value</span> <span class="o">=</span> <span class="n">constrain</span><span class="p">(</span><span class="n">gray_value</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Calculate the % change in alpha
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">float</span> <span class="n">alpha_percent</span> <span class="o">=</span> <span class="kt">float</span><span class="p">(</span><span class="n">constrain</span><span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="n">gray_value</span><span class="p">))</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// Set the alpha channel to the gray value
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="p">(</span><span class="n">replace_image</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Replace frame pixels with gray value (including alpha channel)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="n">pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">gray_value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="n">pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">gray_value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="n">pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">gray_value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="n">pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">gray_value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Mulitply new alpha value with all the colors (since we are using a premultiplied
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// alpha format)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="n">pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="n">alpha_percent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="n">pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">alpha_percent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="n">pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*=</span> <span class="n">alpha_percent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="n">pixels</span><span class="p">[</span><span class="n">byte_index</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*=</span> <span class="n">alpha_percent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// return the modified frame
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">return</span> <span class="n">frame</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>看到这里，我们基本可以明白OpenShot中的transition功能的实现原理了：</p>
+<ul>
+<li>客户端的每一个transition包含了一张mask图片，及Brightness、Contrast属性</li>
+<li>将这个transition拖拽到timeline上，将使用transition包含的信息构造Mask对象：
+<ul>
+<li>mask_reader是读取mask图片的QImageReader对象</li>
+<li>mask_bridghtness是由Brightness属性创建的一个KeyFrame</li>
+<li>mask_contrast是由Contrast属性创建的一个KeyFrame</li>
+</ul>
+</li>
+<li>当播放时，Mask特效会在<code>Mask::GetFrame</code>中应用上述对象，将frame转换为该帧位置需要的效果</li>
+</ul>
+<h1 id="总结">总结</h1>
+<p>从Effect, KeyFrame, Transition的代码分析，我们基本理解了OpenShot中的特效实现。从设计角度看，Effect的实现是很具有扩展性的，开发者很容易添加新的Effect实现；虽然目前的Effect在都是在CPU端实现，但因为这种设计，也可以自行扩展出GPU端实现的Effect。</p>
+<p>Effect和KeyFrame二者结合起来实现了曲线特效。在OpenShot中添加Transition后，因为KeyFrame支持曲线差值，因此像亮度、对比度等图像信息可以实现曲线变化，这让整个特效过程看起来非常平滑。</p>
+<h1 id="参考资料">参考资料</h1>
+<ol>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/OpenMP">OpenMP</a>：The pragma <em>omp parallel</em> is used to fork additional threads to carry out the work enclosed in the construct in parallel. The original thread will be denoted as <em>master thread</em> with thread ID 0.</p>
+<p><em>omp for</em> or <em>omp do</em>: used to <a href="https://en.wikipedia.org/wiki/Map_(parallel_pattern)">split up loop iterations</a> among the threads, also called loop constructs.</p>
+</li>
+<li>
+<p><a href="https://helpx.adobe.com/cn/premiere-pro/using/controlling-effect-changes-using-keyframe.html">使用关键帧插值控制效果变化</a>： 这是Premiere Pro的文档，比较详细的说明了关键帧的概念、作用和用法。这便于我们理解关键帧。</p>
+</li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-08-04
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/c&#43;&#43;/">C&#43;&#43;</a>
+          <a href="/tags/libopenshot/">libopenshot</a>
+          <a href="/tags/video-editing/">video-editing</a>
+          <a href="/tags/video-processing/">video-processing</a>
+          <a href="/tags/video-effects/">video-effects</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/wsa_review/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Window Subsystem Android Review</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/libopenshot/timeline/">
+            <span class="next-text nav-default">libopenshot-Timeline和Clip中的Frame合成</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

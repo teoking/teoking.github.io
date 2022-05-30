@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>从单元测试看Handler - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="首先提出两个问题： Handler主要解决了什么问题？ 如何实现的延迟消息？ 概述 Handler是Android OS中根基性的组件，在framew" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/learn_handler_by_unit_tests/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="从单元测试看Handler" />
+<meta property="og:description" content="首先提出两个问题： Handler主要解决了什么问题？ 如何实现的延迟消息？ 概述 Handler是Android OS中根基性的组件，在framew" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/learn_handler_by_unit_tests/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-31T23:41:15+08:00" />
+<meta property="article:modified_time" content="2021-05-31T23:41:15+08:00" />
+
+<meta itemprop="name" content="从单元测试看Handler">
+<meta itemprop="description" content="首先提出两个问题： Handler主要解决了什么问题？ 如何实现的延迟消息？ 概述 Handler是Android OS中根基性的组件，在framew"><meta itemprop="datePublished" content="2021-05-31T23:41:15+08:00" />
+<meta itemprop="dateModified" content="2021-05-31T23:41:15+08:00" />
+<meta itemprop="wordCount" content="8545">
+<meta itemprop="keywords" content="Android,Handler,Message Queue,Unit Test," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="从单元测试看Handler"/>
+<meta name="twitter:description" content="首先提出两个问题： Handler主要解决了什么问题？ 如何实现的延迟消息？ 概述 Handler是Android OS中根基性的组件，在framew"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">从单元测试看Handler</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-31 </span>
+        <div class="post-category">
+            <a href="/categories/os/"> OS </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#概述">概述</a></li>
+        <li><a href="#looper">Looper</a>
+          <ul>
+            <li><a href="#loopertestjavahttpscsandroidcomandroidplatformsuperprojectmasterctsteststestsossrcandroidosctsloopertestjavabpv1bpt1qloopertestssandroid2fplatform2fsuperprojectcts2ftests2ftests2fos2fsrc2fandroid2fos2f"><a href="https://cs.android.com/android/platform/superproject/+/master:cts/tests/tests/os/src/android/os/cts/LooperTest.java;bpv=1;bpt=1?q=LooperTest&amp;ss=android%2Fplatform%2Fsuperproject:cts%2Ftests%2Ftests%2Fos%2Fsrc%2Fandroid%2Fos%2F">LooperTest.java</a></a></li>
+          </ul>
+        </li>
+        <li><a href="#message">Message</a>
+          <ul>
+            <li><a href="#messagejavahttpscsandroidcomandroidplatformsuperprojectmasterframeworksbasecorejavaandroidosmessagejavabpv1bpt1l308qmessagejavassandroid"><a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/Message.java;bpv=1;bpt=1;l=308?q=message.java&amp;ss=android">Message.java</a></a></li>
+            <li><a href="#messagetestjavahttpscsandroidcomandroidplatformsuperprojectmasterctsteststestsossrcandroidosctsmessagetestjava"><a href="https://cs.android.com/android/platform/superproject/+/master:cts/tests/tests/os/src/android/os/cts/MessageTest.java">MessageTest.java</a></a></li>
+          </ul>
+        </li>
+        <li><a href="#messagequeue">MessageQueue</a>
+          <ul>
+            <li><a href="#messagequeuejava">MessageQueue.java</a></li>
+            <li><a href="#messagequeuetestjavahttpscsandroidcomandroidplatformsuperprojectmasterctsteststestsossrcandroidosctsmessagequeuetestjaval41drcmasterbpv1bpt1qmessagequeuesqssandroid2fplatform2fsuperprojectcts2ftests2ftests2fos2fsrc2fandroid2fos2f"><a href="https://cs.android.com/android/platform/superproject/+/master:cts/tests/tests/os/src/android/os/cts/MessageQueueTest.java;l=41;drc=master;bpv=1;bpt=1?q=MessageQueue&amp;sq=&amp;ss=android%2Fplatform%2Fsuperproject:cts%2Ftests%2Ftests%2Fos%2Fsrc%2Fandroid%2Fos%2F">MessageQueueTest.java</a></a></li>
+          </ul>
+        </li>
+        <li><a href="#handler">Handler</a>
+          <ul>
+            <li><a href="#handlerjavahttpscsandroidcomandroidplatformsuperprojectmasterframeworksbasecorejavaandroidoshandlerjavadrcmasterbpv1bpt1l923qhandlerjavassandroid2fplatform2fsuperproject"><a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/Handler.java;drc=master;bpv=1;bpt=1;l=923?q=handler.java&amp;ss=android%2Fplatform%2Fsuperproject">Handler.java</a></a></li>
+          </ul>
+        </li>
+        <li><a href="#looper-native">Looper (Native)</a>
+          <ul>
+            <li><a href="#loopercpphttpscsandroidcomandroidplatformsuperprojectmastersystemcorelibutilsloopercppdrcmasterbpv1bpt1l175"><a href="https://cs.android.com/android/platform/superproject/+/master:system/core/libutils/Looper.cpp;drc=master;bpv=1;bpt=1;l=175">Looper.cpp</a></a></li>
+          </ul>
+        </li>
+        <li><a href="#开篇问题">开篇问题</a></li>
+        <li><a href="#参考文章">参考文章</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>首先提出两个问题：</p>
+<ol>
+<li>Handler主要解决了什么问题？</li>
+<li>如何实现的延迟消息？</li>
+</ol>
+<h2 id="概述">概述</h2>
+<p>Handler是Android OS中根基性的组件，在framework中有很广泛的使用。在<a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/view/Choreographer.java;drc=master;l=891?q=chore&amp;ss=android">Choregrapher.java</a>中，就使用Handler来实现对frame的处理，我们知道，frame的处理时间要求小于16ms，Handler可以应付如此高频的场景也足以说明它是足够稳定和高效的。</p>
+<p>网上已经有了很多针对Handler的解读，我这里主要参考Gityuan的两篇源码解读文章。</p>
+<p><img src="./handler_work_flow.png" alt="Handler workflow 1"></p>
+<p><img src="./handler_workflow2.png" alt="Handler workflow 2"></p>
+<p>从上面两张图就能很明白的看清楚，Handler这个消息框架的工作流程以及其核心类之间的协作关系。</p>
+<ol>
+<li>Message是整个消息框架要处理的数据结构</li>
+<li>Handler是消息的生产者，也是消费者
+<ol>
+<li>外部程序使用它来生产消息，然后通过post和send方法存入消息队列</li>
+<li>接收Looper分发过来的消息来处理</li>
+</ol>
+</li>
+<li>Looper是消息的分发者（调度者），它不断从MessageQueue获取消息将其分发给对应的Handler来处理</li>
+<li>MessageQueue是存储消息的队列</li>
+</ol>
+<p>了解了理论部分，下面我们看一下，从CTS测试用例的角度看看Handler的实现，同时也温习一下测试用例的实现方法。</p>
+<h2 id="looper">Looper</h2>
+<h3 id="loopertestjavahttpscsandroidcomandroidplatformsuperprojectmasterctsteststestsossrcandroidosctsloopertestjavabpv1bpt1qloopertestssandroid2fplatform2fsuperprojectcts2ftests2ftests2fos2fsrc2fandroid2fos2f"><a href="https://cs.android.com/android/platform/superproject/+/master:cts/tests/tests/os/src/android/os/cts/LooperTest.java;bpv=1;bpt=1?q=LooperTest&amp;ss=android%2Fplatform%2Fsuperproject:cts%2Ftests%2Ftests%2Fos%2Fsrc%2Fandroid%2Fos%2F">LooperTest.java</a></h3>
+<h4 id="testloop">testLoop()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">testLoop</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Thread</span> <span class="n">t</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// prepare中会创建一个Looper对象并绑定到当前线程（线程t）的TLS（ThreadLocal）中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Looper</span><span class="o">.</span><span class="na">prepare</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// MockRunnable会记录执行状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">MockRunnable</span> <span class="n">run</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MockRunnable</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// 创建Handler
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Handler</span> <span class="n">handler</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Handler</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 获取消息，run作为消息执行时的callback
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Message</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="na">obtain</span><span class="o">(</span><span class="n">handler</span><span class="o">,</span> <span class="n">run</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 发送消息进队列，uptimeMillis为0表示消息要立即执行
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">handler</span><span class="o">.</span><span class="na">sendMessageAtTime</span><span class="o">(</span><span class="n">msg</span><span class="o">,</span> <span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 此时消息循环还没有开始，run应该没被执行
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">assertFalse</span><span class="o">(</span><span class="n">run</span><span class="o">.</span><span class="na">runCalled</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 开启消息循环
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Looper</span><span class="o">.</span><span class="na">loop</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 消息应该立即被处理了，run已经被执行
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">assertTrue</span><span class="o">(</span><span class="n">run</span><span class="o">.</span><span class="na">runCalled</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">        <span class="n">t</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">t</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从这个测试用例，我们可以看到，当消息循环开启后，可以立刻判断run回调是否被执行过。loop()是一个同步方法，其内部是一个消息处理循环，只有当消息队列退出时，消息循环才会退出。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Run the message queue in this thread. Be sure to call
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * {@link #quit()} to end the loop.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">loop</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(;;)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Message</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="na">next</span><span class="o">();</span> <span class="c1">// might block
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="o">(</span><span class="n">msg</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// No message indicates that the message queue is quitting.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>测试用例中的消息循环退出在MockRunable的run方法中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span> <span class="kd">class</span> <span class="nc">MockRunnable</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">runCalled</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">runCalled</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 这里退出了looper
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Looper</span><span class="o">.</span><span class="na">myLooper</span><span class="o">().</span><span class="na">quit</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">stop</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Looper</span><span class="o">.</span><span class="na">myLooper</span><span class="o">().</span><span class="na">quit</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>而Looper的quit实际上就是消息队列的退出：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Quits the looper.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * &lt;p&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Causes the {@link #loop} method to terminate without processing any
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * more messages in the message queue.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * &lt;/p&gt;&lt;p&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Any attempt to post messages to the queue after the looper is asked to quit will fail.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * For example, the {@link Handler#sendMessage(Message)} method will return false.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * &lt;/p&gt;&lt;p class=&#34;note&#34;&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Using this method may be unsafe because some messages may not be delivered
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * before the looper terminates.  Consider using {@link #quitSafely} instead to ensure
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * that all pending work is completed in an orderly manner.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * &lt;/p&gt;
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @see #quitSafely
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">quit</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mQueue</span><span class="o">.</span><span class="na">quit</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="testquit">testQuit()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl">		<span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">testQuit</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">t</span> <span class="p">=</span> <span class="n">TestThread</span><span class="p">(</span><span class="n">Runnable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mHasQuit</span> <span class="p">=</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Looper</span><span class="p">.</span><span class="n">prepare</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mLoopHandler</span> <span class="p">=</span> <span class="n">Handler</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mLooper</span> <span class="p">=</span> <span class="n">Looper</span><span class="p">.</span><span class="n">myLooper</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Looper</span><span class="p">.</span><span class="n">loop</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// quit后才能走到这里
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">mHasQuit</span> <span class="p">=</span> <span class="k">true</span>
+</span></span><span class="line"><span class="cl">        <span class="p">})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// Here doesn&#39;t call runTest() because we don&#39;t want to wait the runTest finish.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// Just need to handle Looper#quit();
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">t</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Thread</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">WAIT_TIME</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertSame</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mLooper</span><span class="o">!!</span><span class="p">.</span><span class="n">thread</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">time</span> <span class="p">=</span> <span class="m">100</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Send message before Looper has quit.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">assertTrue</span><span class="p">(</span><span class="n">mLoopHandler</span><span class="o">!!</span><span class="p">.</span><span class="n">sendEmptyMessageAtTime</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="n">SystemClock</span><span class="p">.</span><span class="n">uptimeMillis</span><span class="p">()</span> <span class="p">+</span> <span class="n">time</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Thread</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">WAIT_TIME</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 这里退出looper
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mLooper</span><span class="o">!!</span><span class="p">.</span><span class="n">quit</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Thread</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">WAIT_TIME</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Send message after Looper has quit.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">assertFalse</span><span class="p">(</span><span class="n">mLoopHandler</span><span class="o">!!</span><span class="p">.</span><span class="n">sendEmptyMessageAtTime</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="n">SystemClock</span><span class="p">.</span><span class="n">uptimeMillis</span><span class="p">()</span> <span class="p">+</span> <span class="n">time</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertTrue</span><span class="p">(</span><span class="n">mHasQuit</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">t</span><span class="p">.</span><span class="n">joinAndCheck</span><span class="p">(</span><span class="n">WAIT_TIME</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这个测试用例可以看到以下几点：</p>
+<ul>
+<li>Looper是一个循环调度器：通过<code>queue.next()</code>来拿消息，然后通过<code>message.target.dispatchMessage</code>分发给该消息对应的Handler去处理</li>
+<li>消息是否入列成功，就看send/post方法的返回值</li>
+<li>mLooper!!.quit()前后的assert，都等待了WAIT_TIME（值为1000ms），而消息send时设置的时间是当前再加100ms，这说明，Looper在处理消息时，会受线程调度的影响，实际执行时间并不能严格保证在设置的时间点得到执行</li>
+</ul>
+<h4 id="testsetmessagelogging">testSetMessageLogging()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl">    <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">testSetMessageLogging</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mHasRun</span> <span class="p">=</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">t</span> <span class="p">=</span> <span class="n">TestThread</span><span class="p">(</span><span class="n">Runnable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Looper</span><span class="p">.</span><span class="n">prepare</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">mp</span> <span class="p">=</span> <span class="n">MockPrinter</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Looper</span><span class="p">.</span><span class="n">myLooper</span><span class="p">()</span><span class="o">!!</span><span class="p">.</span><span class="n">setMessageLogging</span><span class="p">(</span><span class="n">mp</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">run</span> <span class="p">=</span> <span class="n">MockRunnable</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">handler</span> <span class="p">=</span> <span class="n">Handler</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">msg</span> <span class="p">=</span> <span class="n">Message</span><span class="p">.</span><span class="n">obtain</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">run</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">handler</span><span class="p">.</span><span class="n">sendMessageAtTime</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Looper</span><span class="p">.</span><span class="n">loop</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// logging生效了
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">assertNotNull</span><span class="p">(</span><span class="n">mp</span><span class="p">.</span><span class="n">str</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mHasRun</span> <span class="p">=</span> <span class="k">true</span>
+</span></span><span class="line"><span class="cl">        <span class="p">})</span>
+</span></span><span class="line"><span class="cl">        <span class="n">t</span><span class="p">.</span><span class="n">runTest</span><span class="p">(</span><span class="n">WAIT_TIME</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertTrue</span><span class="p">(</span><span class="n">mHasRun</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以通过Looper的setMessageLogging方法设置logger来方便调试消息的进出。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">2021-05-28 18:37:40.692 10952-11016/com.teoking.handlertest D/MockPrinter: &gt;&gt;&gt;&gt;&gt; Dispatching to Handler (android.os.Handler) {4140f8f} com.teoking.handlertest.LooperTest$MockRunnable@e2621c: 0
+</span></span><span class="line"><span class="cl">2021-05-28 18:37:40.692 10952-11016/com.teoking.handlertest D/MockPrinter: &lt;&lt;&lt;&lt;&lt; Finished to Handler (android.os.Handler) {4140f8f} com.teoking.handlertest.LooperTest$MockRunnable@e2621c
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="message">Message</h2>
+<h3 id="messagejavahttpscsandroidcomandroidplatformsuperprojectmasterframeworksbasecorejavaandroidosmessagejavabpv1bpt1l308qmessagejavassandroid"><a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/Message.java;bpv=1;bpt=1;l=308?q=message.java&amp;ss=android">Message.java</a></h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 全局消息缓冲池
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">private</span> <span class="kd">static</span> <span class="n">Message</span> <span class="n">sPool</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 缓冲池当前大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">private</span> <span class="kd">static</span> <span class="kt">int</span> <span class="n">sPoolSize</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// IN_USE状态只有在消息创建或obtain时才会重置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cm">/** If set message is in use.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * This flag is set when the message is enqueued and remains set while it
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * is delivered and afterwards when it is recycled.  The flag is only cleared
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * when a new message is created or obtained since that is the only time that
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * applications are allowed to modify the contents of the message.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * It is an error to attempt to enqueue or recycle a message that is already in use.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/*package*/</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">FLAG_IN_USE</span> <span class="o">=</span> <span class="n">1</span> <span class="o">&lt;&lt;</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/** If set message is asynchronous */</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/*package*/</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">FLAG_ASYNCHRONOUS</span> <span class="o">=</span> <span class="n">1</span> <span class="o">&lt;&lt;</span> <span class="n">1</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/** Flags to clear in the copyFrom method */</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/*package*/</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">FLAGS_TO_CLEAR_ON_COPY_FROM</span> <span class="o">=</span> <span class="n">FLAG_IN_USE</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nd">@UnsupportedAppUsage</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/*package*/</span> <span class="kt">int</span> <span class="n">flags</span><span class="o">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="messagetestjavahttpscsandroidcomandroidplatformsuperprojectmasterctsteststestsossrcandroidosctsmessagetestjava"><a href="https://cs.android.com/android/platform/superproject/+/master:cts/tests/tests/os/src/android/os/cts/MessageTest.java">MessageTest.java</a></h3>
+<h4 id="testobtain">testObtain()</h4>
+<p>关于消息的获取有8个，测试了各式各样的obtain参数组合</p>
+<h4 id="testrecycletestsend">testRecycle/testSend</h4>
+<p>剩下的几个测试主要是针对回收和发送后状态的测试。如：</p>
+<ul>
+<li>已经recycle的消息再recycle就会报<code>IllegalStateException</code></li>
+<li>已经recycle的消息再send会报<code>IllegalStateException</code></li>
+<li>在handleMessage时recycle该msg，会报<code>IllegalStateException</code></li>
+</ul>
+<h4 id="testwritetoparcel">testWriteToParcel()</h4>
+<p>序列化的测试</p>
+<h4 id="testsendtotarget">testSendToTarget()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">testSendToTarget</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// Message()创建的消息是没有绑定target的，会直接抛异常
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">mMessage</span><span class="o">.</span><span class="na">sendToTarget</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">fail</span><span class="o">(</span><span class="s">&#34;should throw exception&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">//expected
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 下面这种方式获取的消息会绑定到mHandler
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Message</span> <span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="na">obtain</span><span class="o">(</span><span class="n">mHandler</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertFalse</span><span class="o">(</span><span class="n">mMessageHandlerCalled</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 绑定了target，才可以调用sendToTarget
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">message</span><span class="o">.</span><span class="na">sendToTarget</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sleep</span><span class="o">(</span><span class="n">SLEEP_TIME</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">assertTrue</span><span class="o">(</span><span class="n">mMessageHandlerCalled</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>总结：</p>
+<ul>
+<li>缓冲池是Message中的重要功能，相关测试较多，测试了8中参数组合下是否能获取到预期的message</li>
+<li>缓冲池是整个app vm中共用的（单例变量），被回收的Message对象存在于缓冲池中，但内存占用很小</li>
+<li>消息的状态可以分为：未被使用（缓冲池中或新创建），使用中（<code>inUse</code>）</li>
+</ul>
+<h2 id="messagequeue">MessageQueue</h2>
+<p>MessageQueue是Handler消息框架中最复杂的部分。它是消息框架Java层和Native层的纽带。</p>
+<h3 id="messagequeuejava">MessageQueue.java</h3>
+<p>我们重点看一下这个数据结构的init, enqueue，next, syncBarrier和remove操作。</p>
+<h4 id="init">init()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="n">MessageQueue</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">quitAllowed</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mQuitAllowed</span> <span class="o">=</span> <span class="n">quitAllowed</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 初始化时同时要做native初始化
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mPtr</span> <span class="o">=</span> <span class="n">nativeInit</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="enqueuemessagemsg-when">enqueueMessage(msg, when)</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="kt">boolean</span> <span class="nf">enqueueMessage</span><span class="o">(</span><span class="n">Message</span> <span class="n">msg</span><span class="o">,</span> <span class="kt">long</span> <span class="n">when</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 入队的消息必须要绑定到Handler对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">msg</span><span class="o">.</span><span class="na">target</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Message must have a target.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 不允许IN_USE的消息入队
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="o">(</span><span class="n">msg</span><span class="o">.</span><span class="na">isInUse</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s">&#34; This message is already in use.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// 不允许消息队列退出时入队消息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="o">(</span><span class="n">mQuitting</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">IllegalStateException</span> <span class="n">e</span> <span class="o">=</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">msg</span><span class="o">.</span><span class="na">target</span> <span class="o">+</span> <span class="s">&#34; sending message to a Handler on a dead thread&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Log</span><span class="o">.</span><span class="na">w</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">(),</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">msg</span><span class="o">.</span><span class="na">recycle</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">            <span class="c1">// 标记消息为IN_USE
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">msg</span><span class="o">.</span><span class="na">markInUse</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">msg</span><span class="o">.</span><span class="na">when</span> <span class="o">=</span> <span class="n">when</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Message</span> <span class="n">p</span> <span class="o">=</span> <span class="n">mMessages</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">boolean</span> <span class="n">needWake</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">p</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">when</span> <span class="o">==</span> <span class="n">0</span> <span class="o">||</span> <span class="n">when</span> <span class="o">&lt;</span> <span class="n">p</span><span class="o">.</span><span class="na">when</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// New head, wake up the event queue if blocked.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">msg</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">p</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">mMessages</span> <span class="o">=</span> <span class="n">msg</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">needWake</span> <span class="o">=</span> <span class="n">mBlocked</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 如果当前消息是sync barrier且待入队消息是异步的，就需要wake
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// Inserted within the middle of the queue.  Usually we don&#39;t have to wake
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// up the event queue unless there is a barrier at the head of the queue
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// and the message is the earliest asynchronous message in the queue.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">needWake</span> <span class="o">=</span> <span class="n">mBlocked</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="o">.</span><span class="na">target</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">msg</span><span class="o">.</span><span class="na">isAsynchronous</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 根据when查找出msg在消息列表中的插入位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Message</span> <span class="n">prev</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="o">(;;)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">prev</span> <span class="o">=</span> <span class="n">p</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="o">(</span><span class="n">p</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">when</span> <span class="o">&lt;</span> <span class="n">p</span><span class="o">.</span><span class="na">when</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">break</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="o">(</span><span class="n">needWake</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="o">.</span><span class="na">isAsynchronous</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">needWake</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 将msg插入消息列表
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">msg</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">p</span><span class="o">;</span> <span class="c1">// invariant: p == prev.next
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">prev</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">msg</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// 通知native唤醒
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// We can assume mPtr != 0 because mQuitting is false.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="o">(</span><span class="n">needWake</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">nativeWake</span><span class="o">(</span><span class="n">mPtr</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 返回入队成功状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>分析了enqueue的实现，就可以解答*&ldquo;如何实现的延迟消息？&quot;*这个问题的一部分：带延迟时间的消息，在存储时，会按照时间顺序被插入到消息列表中。</p>
+<h4 id="next">next()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">		<span class="nd">@UnsupportedAppUsage</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Message</span> <span class="nf">next</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Return here if the message loop has already quit and been disposed.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// This can happen if the application tries to restart a looper after quit
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// which is not supported.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kd">final</span> <span class="kt">long</span> <span class="n">ptr</span> <span class="o">=</span> <span class="n">mPtr</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">ptr</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">pendingIdleHandlerCount</span> <span class="o">=</span> <span class="o">-</span><span class="n">1</span><span class="o">;</span> <span class="c1">// -1 only during first iteration
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span> <span class="n">nextPollTimeoutMillis</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(;;)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">nextPollTimeoutMillis</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Binder</span><span class="o">.</span><span class="na">flushPendingCommands</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// native poll，阻塞直到有消息事件，见Looper.h#poolOnce
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">nativePollOnce</span><span class="o">(</span><span class="n">ptr</span><span class="o">,</span> <span class="n">nextPollTimeoutMillis</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// Try to retrieve the next message.  Return if found.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="kd">final</span> <span class="kt">long</span> <span class="n">now</span> <span class="o">=</span> <span class="n">SystemClock</span><span class="o">.</span><span class="na">uptimeMillis</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Message</span> <span class="n">prevMsg</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Message</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">mMessages</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// msg.target == null表示该消息为sync barrier，这时去找一条异步消息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">if</span> <span class="o">(</span><span class="n">msg</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">msg</span><span class="o">.</span><span class="na">target</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// Stalled by a barrier.  Find the next asynchronous message in the queue.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">do</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">prevMsg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span> <span class="k">while</span> <span class="o">(</span><span class="n">msg</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">msg</span><span class="o">.</span><span class="na">isAsynchronous</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="o">(</span><span class="n">msg</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 第一条消息的执行时间还没到，则计算出新的等待时间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">if</span> <span class="o">(</span><span class="n">now</span> <span class="o">&lt;</span> <span class="n">msg</span><span class="o">.</span><span class="na">when</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="c1">// Next message is not ready.  Set a timeout to wake up when it is ready.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">nextPollTimeoutMillis</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span> <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">(</span><span class="n">msg</span><span class="o">.</span><span class="na">when</span> <span class="o">-</span> <span class="n">now</span><span class="o">,</span> <span class="n">Integer</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 返回该消息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="c1">// Got a message.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">mBlocked</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">if</span> <span class="o">(</span><span class="n">prevMsg</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">prevMsg</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">mMessages</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">msg</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">if</span> <span class="o">(</span><span class="n">DEBUG</span><span class="o">)</span> <span class="n">Log</span><span class="o">.</span><span class="na">v</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&#34;Returning message: &#34;</span> <span class="o">+</span> <span class="n">msg</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="c1">// 标记IN_USE
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">msg</span><span class="o">.</span><span class="na">markInUse</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="n">msg</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 如果没有消息，设置nextPollTimeoutMillis为-1，这会让native端一直等待直到有消息事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// No more messages.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">nextPollTimeoutMillis</span> <span class="o">=</span> <span class="o">-</span><span class="n">1</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// Process the quit message now that all pending messages have been handled.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">if</span> <span class="o">(</span><span class="n">mQuitting</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">dispose</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>nativePollOnce最终会调用到<code>system/core/libutils/Looper.cpp</code>的<code>pollInner</code>， 后者是通过<code>epoll_wait</code>实现对消息的等待的。</p>
+<h4 id="postsyncbarrier">postSyncBarrier()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Posts a synchronization barrier to the Looper&#39;s message queue.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Message processing occurs as usual until the message queue encounters the
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * synchronization barrier that has been posted.  When the barrier is encountered,
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * later synchronous messages in the queue are stalled (prevented from being executed)
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * until the barrier is released by calling {@link #removeSyncBarrier} and specifying
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * the token that identifies the synchronization barrier.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * This method is used to immediately postpone execution of all subsequently posted
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * synchronous messages until a condition is met that releases the barrier.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Asynchronous messages (see {@link Message#isAsynchronous} are exempt from the barrier
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * and continue to be processed as usual.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * This call must be always matched by a call to {@link #removeSyncBarrier} with
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * the same token to ensure that the message queue resumes normal operation.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Otherwise the application will probably hang!
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @return A token that uniquely identifies the barrier.  This token must be
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * passed to {@link #removeSyncBarrier} to release the barrier.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @hide
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@UnsupportedAppUsage</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@TestApi</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">postSyncBarrier</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">postSyncBarrier</span><span class="o">(</span><span class="n">SystemClock</span><span class="o">.</span><span class="na">uptimeMillis</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">postSyncBarrier</span><span class="o">(</span><span class="kt">long</span> <span class="n">when</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Enqueue a new sync barrier token.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// We don&#39;t need to wake the queue because the purpose of a barrier is to stall it.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">final</span> <span class="kt">int</span> <span class="n">token</span> <span class="o">=</span> <span class="n">mNextBarrierToken</span><span class="o">++;</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">final</span> <span class="n">Message</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="na">obtain</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">msg</span><span class="o">.</span><span class="na">markInUse</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">msg</span><span class="o">.</span><span class="na">when</span> <span class="o">=</span> <span class="n">when</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">msg</span><span class="o">.</span><span class="na">arg1</span> <span class="o">=</span> <span class="n">token</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">Message</span> <span class="n">prev</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Message</span> <span class="n">p</span> <span class="o">=</span> <span class="n">mMessages</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">when</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">while</span> <span class="o">(</span><span class="n">p</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">p</span><span class="o">.</span><span class="na">when</span> <span class="o">&lt;=</span> <span class="n">when</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">prev</span> <span class="o">=</span> <span class="n">p</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">prev</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span> <span class="c1">// invariant: p == prev.next
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">msg</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">p</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">prev</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">msg</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 将sync barrier放在消息队列第一个
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">msg</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">p</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">mMessages</span> <span class="o">=</span> <span class="n">msg</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">token</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>MessageQueue还支持一个功能是设置同步消息屏障（sync barrier）。它的作用是，**设置屏障（时间点）后的所有同步消息都会被推迟执行（postpone），直到这个屏障被remove。**每一个barrier实际上也是入队的message。</p>
+<p>在Framework中用到sync barrier的地方是，在ViewRootImpl中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="nd">@UnsupportedAppUsage</span><span class="o">(</span><span class="n">maxTargetSdk</span> <span class="o">=</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">R</span><span class="o">,</span> <span class="n">trackingBug</span> <span class="o">=</span> <span class="n">170729553</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">scheduleTraversals</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(!</span><span class="n">mTraversalScheduled</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mTraversalScheduled</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 这里设置sync barrier
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">mTraversalBarrier</span> <span class="o">=</span> <span class="n">mHandler</span><span class="o">.</span><span class="na">getLooper</span><span class="o">().</span><span class="na">getQueue</span><span class="o">().</span><span class="na">postSyncBarrier</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 给choreographer发送mTraversalRunnable，它去调用doTraversal
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">mChoreographer</span><span class="o">.</span><span class="na">postCallback</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Choreographer</span><span class="o">.</span><span class="na">CALLBACK_TRAVERSAL</span><span class="o">,</span> <span class="n">mTraversalRunnable</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">notifyRendererOfFramePending</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">pokeDrawLockIfNeeded</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// doTraversal在mTraversalRunnable被调用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">void</span> <span class="nf">doTraversal</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">mTraversalScheduled</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mTraversalScheduled</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 这里移除barrier
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">mHandler</span><span class="o">.</span><span class="na">getLooper</span><span class="o">().</span><span class="na">getQueue</span><span class="o">().</span><span class="na">removeSyncBarrier</span><span class="o">(</span><span class="n">mTraversalBarrier</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">mProfile</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Debug</span><span class="o">.</span><span class="na">startMethodTracing</span><span class="o">(</span><span class="s">&#34;ViewAncestor&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// 执行traversal
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">performTraversals</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">mProfile</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Debug</span><span class="o">.</span><span class="na">stopMethodTracing</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="n">mProfile</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>结合上述代码住址，sync barrier在这里的作用是，让<code>mTraversalRunnable</code>尽快得到执行，从而加快<code>doTraversal</code>去<code>performTraversal</code>，这样就<strong>尽可能避免主线程队列中积压的消息过多导致UI刷新的操作不能立即执行</strong>而产生的UI卡顿。</p>
+<p>换个角度看，<strong>sync barrier为<code>MessageQueue</code>增加了一个优先通道（或优先级）</strong>：当VIP客户出现时，普通客户都要等到为该客户的服务结束后才能继续被服务。虽然消息可以被设置为异步模式，但这种用法并不常见（这类消息通常表示中断、用户输入等，意味着即使其它消息被挂起了，也需要独立处理的消息）。</p>
+<h4 id="removemessages">removeMessages()</h4>
+<p>移除消息的方法由很多变种，这些变种只是消息的筛选条件参数不同，其功能是一致的，即：</p>
+<ul>
+<li>根据筛选条件找到消息</li>
+<li>回收该消息，并将其从消息列表中移除</li>
+</ul>
+<h3 id="messagequeuetestjavahttpscsandroidcomandroidplatformsuperprojectmasterctsteststestsossrcandroidosctsmessagequeuetestjaval41drcmasterbpv1bpt1qmessagequeuesqssandroid2fplatform2fsuperprojectcts2ftests2ftests2fos2fsrc2fandroid2fos2f"><a href="https://cs.android.com/android/platform/superproject/+/master:cts/tests/tests/os/src/android/os/cts/MessageQueueTest.java;l=41;drc=master;bpv=1;bpt=1?q=MessageQueue&amp;sq=&amp;ss=android%2Fplatform%2Fsuperproject:cts%2Ftests%2Ftests%2Fos%2Fsrc%2Fandroid%2Fos%2F">MessageQueueTest.java</a></h3>
+<h4 id="testfiledescriptorcallbackshttpscsandroidcomandroidplatformsuperprojectmasterctsteststestsossrcandroidosctsmessagequeuetestjavadrcmasterbpv1bpt1l270gsntestfiledescriptorcallbacksgskythe3a2f2fandroidgooglesourcecom2fplatform2fsuperproject3flang3djava3fpath3dandroidosctsmessagequeuetest23c7e3b21c3f6fa1bd263d4dd959918c1465c54dbc96dccdff01e5d3e929961e76"><a href="https://cs.android.com/android/platform/superproject/+/master:cts/tests/tests/os/src/android/os/cts/MessageQueueTest.java;drc=master;bpv=1;bpt=1;l=270?gsn=testFileDescriptorCallbacks&amp;gs=kythe%3A%2F%2Fandroid.googlesource.com%2Fplatform%2Fsuperproject%3Flang%3Djava%3Fpath%3Dandroid.os.cts.MessageQueueTest%23c7e3b21c3f6fa1bd263d4dd959918c1465c54dbc96dccdff01e5d3e929961e76">testFileDescriptorCallbacks</a>()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">testFileDescriptorCallbacks</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Prepare a special looper that we can catch exceptions from.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">AssertableHandlerThread</span> <span class="n">thread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AssertableHandlerThread</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">thread</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">writerSawError</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">readerDone</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">final</span> <span class="n">MessageQueue</span> <span class="n">queue</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="na">getLooper</span><span class="o">().</span><span class="na">getQueue</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">final</span> <span class="n">ParcelFileDescriptor</span><span class="o">[]</span> <span class="n">pipe</span> <span class="o">=</span> <span class="n">ParcelFileDescriptor</span><span class="o">.</span><span class="na">createPipe</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">try</span> <span class="o">(</span><span class="kd">final</span> <span class="n">FileInputStream</span> <span class="n">reader</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AutoCloseInputStream</span><span class="o">(</span><span class="n">pipe</span><span class="o">[</span><span class="n">0</span><span class="o">]);</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">final</span> <span class="n">FileOutputStream</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AutoCloseOutputStream</span><span class="o">(</span><span class="n">pipe</span><span class="o">[</span><span class="n">1</span><span class="o">]))</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="kd">final</span> <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">256</span> <span class="o">*</span> <span class="n">1024</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// Prepare to write a lot of data to the pipe asynchronously.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// We don&#39;t actually care about the content (assume pipes work correctly)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// so we just write lots of zeros.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">OnFileDescriptorEventListener</span> <span class="n">writerCallback</span> <span class="o">=</span> <span class="k">new</span> <span class="n">OnFileDescriptorEventListener</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">private</span> <span class="kt">byte</span><span class="o">[]</span> <span class="n">mBuffer</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="n">4096</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mRemaining</span> <span class="o">=</span> <span class="n">size</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">mDone</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">onFileDescriptorEvents</span><span class="o">(</span><span class="n">FileDescriptor</span> <span class="n">fd</span><span class="o">,</span> <span class="kt">int</span> <span class="n">events</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">assertEquals</span><span class="o">(</span><span class="n">pipe</span><span class="o">[</span><span class="n">1</span><span class="o">].</span><span class="na">getFileDescriptor</span><span class="o">(),</span> <span class="n">fd</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">if</span> <span class="o">(!</span><span class="n">mDone</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                            <span class="c1">// When an error happens because the reader closed its end,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                            <span class="c1">// signal the test, and remove the callback.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                            <span class="k">if</span> <span class="o">((</span><span class="n">events</span> <span class="o">&amp;</span> <span class="n">OnFileDescriptorEventListener</span><span class="o">.</span><span class="na">EVENT_ERROR</span><span class="o">)</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">writerSawError</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">mDone</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                                <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="c1">// Write all output until an error is observed.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                            <span class="k">if</span> <span class="o">((</span><span class="n">events</span> <span class="o">&amp;</span> <span class="n">OnFileDescriptorEventListener</span><span class="o">.</span><span class="na">EVENT_OUTPUT</span><span class="o">)</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">min</span><span class="o">(</span><span class="n">mBuffer</span><span class="o">.</span><span class="na">length</span><span class="o">,</span> <span class="n">mRemaining</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                                <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                    <span class="c1">// 写数据过去
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                    <span class="n">writer</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">mBuffer</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">count</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                    <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">mRemaining</span> <span class="o">-=</span> <span class="n">count</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                                <span class="c1">// 当还有数据时，则注册并等待EVENT_OUTPUT，否则就等待EVENT_ERROR事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                <span class="k">return</span> <span class="n">mRemaining</span> <span class="o">!=</span> <span class="n">0</span> <span class="o">?</span> <span class="n">EVENT_OUTPUT</span> <span class="o">:</span> <span class="n">EVENT_ERROR</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="c1">// Should never see anything else.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">fail</span><span class="o">(</span><span class="s">&#34;Saw unexpected events: &#34;</span> <span class="o">+</span> <span class="n">events</span> <span class="o">+</span> <span class="s">&#34;, mDone=&#34;</span> <span class="o">+</span> <span class="n">mDone</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                <span class="o">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// Prepare to read all of that data.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">OnFileDescriptorEventListener</span> <span class="n">readerCallback</span> <span class="o">=</span> <span class="k">new</span> <span class="n">OnFileDescriptorEventListener</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">private</span> <span class="kt">byte</span><span class="o">[]</span> <span class="n">mBuffer</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="n">4096</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mRemaining</span> <span class="o">=</span> <span class="n">size</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">mDone</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">onFileDescriptorEvents</span><span class="o">(</span><span class="n">FileDescriptor</span> <span class="n">fd</span><span class="o">,</span> <span class="kt">int</span> <span class="n">events</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">assertEquals</span><span class="o">(</span><span class="n">pipe</span><span class="o">[</span><span class="n">0</span><span class="o">].</span><span class="na">getFileDescriptor</span><span class="o">(),</span> <span class="n">fd</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">if</span> <span class="o">(!</span><span class="n">mDone</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                            <span class="c1">// Errors should not happen.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                            <span class="k">if</span> <span class="o">((</span><span class="n">events</span> <span class="o">&amp;</span> <span class="n">OnFileDescriptorEventListener</span><span class="o">.</span><span class="na">EVENT_ERROR</span><span class="o">)</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">fail</span><span class="o">(</span><span class="s">&#34;Saw unexpected error.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                                <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                            <span class="c1">// Read until everything is read, signal the test,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                            <span class="c1">// and remove the callback.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                            <span class="k">if</span> <span class="o">((</span><span class="n">events</span> <span class="o">&amp;</span> <span class="n">OnFileDescriptorEventListener</span><span class="o">.</span><span class="na">EVENT_INPUT</span><span class="o">)</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                <span class="c1">// 读数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                    <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">mBuffer</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">mBuffer</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                                    <span class="n">mRemaining</span> <span class="o">-=</span> <span class="n">count</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                    <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                                <span class="c1">// 如果还有待接收数据，则注册等待EVENT_INPUT事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                                <span class="k">if</span> <span class="o">(</span><span class="n">mRemaining</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                                    <span class="k">return</span> <span class="n">EVENT_INPUT</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">readerDone</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">mDone</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                                <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="c1">// Should never see anything else.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">fail</span><span class="o">(</span><span class="s">&#34;Saw unexpected events: &#34;</span> <span class="o">+</span> <span class="n">events</span> <span class="o">+</span> <span class="s">&#34;, mDone=&#34;</span> <span class="o">+</span> <span class="n">mDone</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                <span class="o">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// Register the callbacks.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// 注册reader callback，监听EVENT_INPUT
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">queue</span><span class="o">.</span><span class="na">addOnFileDescriptorEventListener</span><span class="o">(</span><span class="n">reader</span><span class="o">.</span><span class="na">getFD</span><span class="o">(),</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">OnFileDescriptorEventListener</span><span class="o">.</span><span class="na">EVENT_INPUT</span><span class="o">,</span> <span class="n">readerCallback</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 注册writer callback，监听EVENT_OUTPUT
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">queue</span><span class="o">.</span><span class="na">addOnFileDescriptorEventListener</span><span class="o">(</span><span class="n">writer</span><span class="o">.</span><span class="na">getFD</span><span class="o">(),</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">OnFileDescriptorEventListener</span><span class="o">.</span><span class="na">EVENT_OUTPUT</span><span class="o">,</span> <span class="n">writerCallback</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// Wait for the reader to see all of the data that the writer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// is prepared to send.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">readerDone</span><span class="o">.</span><span class="na">await</span><span class="o">(</span><span class="n">TIMEOUT</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MILLISECONDS</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// At this point the reader&#39;s callback should be unregistered.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// Close the reader&#39;s file descriptor (pretend it crashed or something).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">reader</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// Because the reader is gone, the writer should observe an error (EPIPE).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// Wait for this to happen.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">writerSawError</span><span class="o">.</span><span class="na">await</span><span class="o">(</span><span class="n">TIMEOUT</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MILLISECONDS</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// The reader and writer should already be unregistered.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// Try to unregistered them again to ensure nothing bad happens.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">queue</span><span class="o">.</span><span class="na">removeOnFileDescriptorEventListener</span><span class="o">(</span><span class="n">reader</span><span class="o">.</span><span class="na">getFD</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="n">queue</span><span class="o">.</span><span class="na">removeOnFileDescriptorEventListener</span><span class="o">(</span><span class="n">writer</span><span class="o">.</span><span class="na">getFD</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">thread</span><span class="o">.</span><span class="na">quitAndRethrow</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这个测试用例测试的是<a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/MessageQueue.java;drc=master;bpv=1;bpt=1;l=194?gsn=addOnFileDescriptorEventListener&amp;gs=kythe%3A%2F%2Fandroid.googlesource.com%2Fplatform%2Fsuperproject%3Flang%3Djava%3Fpath%3Dandroid.os.MessageQueue%236f441897cfd5d0f7e2f24a239da6f4c5e766cb989edd6f5c46b6a7804749f8b7">addOnFileDescriptorEventListener</a>这个方法。测试的过程大概是：</p>
+<ol>
+<li>
+<p>创建一个数据管道，分别为管道的写入端和读取端创建callback来处理<code>OnFileDescriptorEventListener</code>事件，并注册到消息队列</p>
+</li>
+<li>
+<p>总共写256 * 1024字节空数据（全为0），写入/读取buffer大小均为4096</p>
+</li>
+<li>
+<p>writer callback中每写一次，就会继续等待<code>EVENT_OUTPUT</code>事件</p>
+</li>
+<li>
+<p>reader callback中每读一次，就会继续等待<code>EVENT_INPUT</code>事件</p>
+</li>
+<li>
+<p>循环3，4步骤，直到写完，writer和reader再通过<code>EVENT_ERROR</code>同步状态</p>
+</li>
+<li>
+<p>结束</p>
+</li>
+</ol>
+<p>我们分析一下addOnFileDescriptorEventListener的实现。</p>
+<p>调用链：</p>
+<ol>
+<li><code>addOnFileDescriptorEventListener</code></li>
+<li><code>updateOnFileDescriptorEventListenerLocked</code></li>
+<li><code>nativeSetFileDescriptorEvents</code></li>
+<li><code>setFileDescriptorEvents</code> (<em>frameworks/base/core/jni/android_os_MessageQueue.cpp</em>)</li>
+<li><code>Looper.adFd()</code>  (<em>system/core/libutils/Looper.cpp</em>)</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">  <span class="c1">// MessageQueue.java
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">addOnFileDescriptorEventListener</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">FileDescriptor</span> <span class="n">fd</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                                               <span class="nd">@OnFileDescriptorEventListener.Events</span> <span class="kt">int</span> <span class="n">events</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                                               <span class="nd">@NonNull</span> <span class="n">OnFileDescriptorEventListener</span> <span class="n">listener</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">updateOnFileDescriptorEventListenerLocked</span><span class="o">(</span><span class="n">fd</span><span class="o">,</span> <span class="n">events</span><span class="o">,</span> <span class="n">listener</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// android_os_MessageQueue.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">NativeMessageQueue</span><span class="o">::</span><span class="n">setFileDescriptorEvents</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">int</span> <span class="n">events</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">looperEvents</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">events</span> <span class="o">&amp;</span> <span class="n">CALLBACK_EVENT_INPUT</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">looperEvents</span> <span class="o">|=</span> <span class="n">Looper</span><span class="o">::</span><span class="n">EVENT_INPUT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">events</span> <span class="o">&amp;</span> <span class="n">CALLBACK_EVENT_OUTPUT</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">looperEvents</span> <span class="o">|=</span> <span class="n">Looper</span><span class="o">::</span><span class="n">EVENT_OUTPUT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mLooper</span><span class="o">-&gt;</span><span class="n">addFd</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">Looper</span><span class="o">::</span><span class="n">POLL_CALLBACK</span><span class="p">,</span> <span class="n">looperEvents</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">events</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mLooper</span><span class="o">-&gt;</span><span class="n">removeFd</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// system/core/libutils/Looper.cpp
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="n">Looper</span><span class="o">::</span><span class="n">addFd</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">int</span> <span class="n">ident</span><span class="p">,</span> <span class="kt">int</span> <span class="n">events</span><span class="p">,</span> <span class="k">const</span> <span class="n">sp</span><span class="o">&lt;</span><span class="n">LooperCallback</span><span class="o">&gt;&amp;</span> <span class="n">callback</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#if DEBUG_CALLBACKS
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="n">ALOGD</span><span class="p">(</span><span class="s">&#34;%p ~ addFd - fd=%d, ident=%d, events=0x%x, callback=%p, data=%p&#34;</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">ident</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">events</span><span class="p">,</span> <span class="n">callback</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">data</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">callback</span><span class="p">.</span><span class="n">get</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span> <span class="n">mAllowNonCallbacks</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ALOGE</span><span class="p">(</span><span class="s">&#34;Invalid attempt to set NULL callback but not allowed for this looper.&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">ident</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ALOGE</span><span class="p">(</span><span class="s">&#34;Invalid attempt to set NULL callback with ident &lt; 0.&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ident</span> <span class="o">=</span> <span class="n">POLL_CALLBACK</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">{</span> <span class="c1">// acquire lock
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">AutoMutex</span> <span class="nf">_l</span><span class="p">(</span><span class="n">mLock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">Request</span> <span class="n">request</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">request</span><span class="p">.</span><span class="n">fd</span> <span class="o">=</span> <span class="n">fd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">request</span><span class="p">.</span><span class="n">ident</span> <span class="o">=</span> <span class="n">ident</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">request</span><span class="p">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">request</span><span class="p">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">mNextRequestSeq</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">request</span><span class="p">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">request</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">mNextRequestSeq</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="n">mNextRequestSeq</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// reserve sequence number -1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">        <span class="k">struct</span> <span class="nc">epoll_event</span> <span class="n">eventItem</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">request</span><span class="p">.</span><span class="n">initEventItem</span><span class="p">(</span><span class="o">&amp;</span><span class="n">eventItem</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">ssize_t</span> <span class="n">requestIndex</span> <span class="o">=</span> <span class="n">mRequests</span><span class="p">.</span><span class="n">indexOfKey</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">requestIndex</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int</span> <span class="n">epollResult</span> <span class="o">=</span> <span class="n">epoll_ctl</span><span class="p">(</span><span class="n">mEpollFd</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">eventItem</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">epollResult</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ALOGE</span><span class="p">(</span><span class="s">&#34;Error adding epoll events for fd %d: %s&#34;</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mRequests</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">request</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int</span> <span class="n">epollResult</span> <span class="o">=</span> <span class="n">epoll_ctl</span><span class="p">(</span><span class="n">mEpollFd</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">EPOLL_CTL_MOD</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">eventItem</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">epollResult</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">errno</span> <span class="o">==</span> <span class="n">ENOENT</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// Tolerate ENOENT because it means that an older file descriptor was
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// closed before its callback was unregistered and meanwhile a new
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// file descriptor with the same number has been created and is now
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// being registered for the first time.  This error may occur naturally
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// when a callback has the side-effect of closing the file descriptor
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// before returning and unregistering itself.  Callback sequence number
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// checks further ensure that the race is benign.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// Unfortunately due to kernel limitations we need to rebuild the epoll
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// set from scratch because it may contain an old file handle that we are
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// now unable to remove since its file descriptor is no longer valid.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// No such problem would have occurred if we were using the poll system
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// call instead, but that approach carries others disadvantages.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#if DEBUG_CALLBACKS
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>                    <span class="n">ALOGD</span><span class="p">(</span><span class="s">&#34;%p ~ addFd - EPOLL_CTL_MOD failed due to file descriptor &#34;</span>
+</span></span><span class="line"><span class="cl">                            <span class="s">&#34;being recycled, falling back on EPOLL_CTL_ADD: %s&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                            <span class="k">this</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>                    <span class="n">epollResult</span> <span class="o">=</span> <span class="n">epoll_ctl</span><span class="p">(</span><span class="n">mEpollFd</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">EPOLL_CTL_ADD</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">eventItem</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="p">(</span><span class="n">epollResult</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">ALOGE</span><span class="p">(</span><span class="s">&#34;Error modifying or adding epoll events for fd %d: %s&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">fd</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">scheduleEpollRebuildLocked</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ALOGE</span><span class="p">(</span><span class="s">&#34;Error modifying epoll events for fd %d: %s&#34;</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mRequests</span><span class="p">.</span><span class="n">replaceValueAt</span><span class="p">(</span><span class="n">requestIndex</span><span class="p">,</span> <span class="n">request</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="c1">// release lock
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从上我们可以看到，对FileDescriptor的监听是基于epoll<sup>参考3</sup>实现的。</p>
+<h2 id="handler">Handler</h2>
+<h3 id="handlerjavahttpscsandroidcomandroidplatformsuperprojectmasterframeworksbasecorejavaandroidoshandlerjavadrcmasterbpv1bpt1l923qhandlerjavassandroid2fplatform2fsuperproject"><a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/Handler.java;drc=master;bpv=1;bpt=1;l=923?q=handler.java&amp;ss=android%2Fplatform%2Fsuperproject">Handler.java</a></h3>
+<h4 id="handler-1">Handler()</h4>
+<p>Handler()这个构造器已经被标记为废弃，废弃原因：</p>
+<p><img src="./handler_constructor_deprecated.png" alt="Handler constructor is deprecated"></p>
+<p>在Handler构造方法中，隐式地选择一个Looper会导致以下问题：</p>
+<ul>
+<li>如果该Handler（这里指的是Looper对应的那个Handler）不接收新任务或退出了，会导致消息无声无息地丢失。举例来说，Handler A对应Looper A，以及绑定到了Thread A，然后因为开发者在Thread A的某些代码中，通过Handler()构造器创建Handler B时会默认取Looper.myLooper()，而它就是存储在Thread A的TLS中的Looper A，那么相当于Handler B和Handler A实际上共用Looper A，消息的调度和处理将发生在Thread A中。如果在后续某个时刻，Looper A被退出了，这就会导致通过Handler B发送的消息丢失了；或者通过Handler A调用remove方法移除掉message和callback，也可能会导致Handler B的消息丢失；而这两种情况下，Handler B是不知情的。出现这种bug就比较难发现。</li>
+<li>如果在一个没有active Loop的线程中这样创建Handler，就会导致crash。因为在构造时，Handler的mLooper为null就会抛异常。</li>
+<li>会导致竞争。因为Handler是单线程的消息框架，当为多个Handler默认选择了同一个Looper后，他们的消息都要在一个线程中轮流执行，这种可能会导致非预期的竞争。</li>
+</ul>
+<p>所以，官方建议使用Executor或给Handler明确指定Looper。（PS: 替代Handler的更好的技术是Coroutine）</p>
+<h4 id="handlerboolean-async">Handler(boolean async)</h4>
+<p><code>async</code>为<code>true</code>时，<code>Handler</code>会强制设置所有进入队列的消息为asynchronous。由上面的<code>MessageQueue</code>解析可知异步消息是不受sync barrier限制的。<strong>但，这个API并不开放给应用开发者使用。</strong></p>
+<h2 id="looper-native">Looper (Native)</h2>
+<p>经过上面的分析，我们注意到，实际上整个Handler消息框架中消息队列的核心功能，是建立native层的Looper之上的，而它又是基于epoll技术实现的。</p>
+<h3 id="loopercpphttpscsandroidcomandroidplatformsuperprojectmastersystemcorelibutilsloopercppdrcmasterbpv1bpt1l175"><a href="https://cs.android.com/android/platform/superproject/+/master:system/core/libutils/Looper.cpp;drc=master;bpv=1;bpt=1;l=175">Looper.cpp</a></h3>
+<h4 id="pollonce">pollOnce()</h4>
+<p>pollOnce会等待事件到来返回，或超时返回</p>
+<h4 id="sendmessage">sendMessage()</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">Looper</span><span class="o">::</span><span class="n">sendMessageAtTime</span><span class="p">(</span><span class="n">nsecs_t</span> <span class="n">uptime</span><span class="p">,</span> <span class="k">const</span> <span class="n">sp</span><span class="o">&lt;</span><span class="n">MessageHandler</span><span class="o">&gt;&amp;</span> <span class="n">handler</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Message</span><span class="o">&amp;</span> <span class="n">message</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span> <span class="c1">// acquire lock
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">AutoMutex</span> <span class="nf">_l</span><span class="p">(</span><span class="n">mLock</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">size_t</span> <span class="n">messageCount</span> <span class="o">=</span> <span class="n">mMessageEnvelopes</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">messageCount</span> <span class="o">&amp;&amp;</span> <span class="n">uptime</span> <span class="o">&gt;=</span> <span class="n">mMessageEnvelopes</span><span class="p">.</span><span class="n">itemAt</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">uptime</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">				<span class="c1">// 将消息封装到信封，并插入         
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">MessageEnvelope</span> <span class="nf">messageEnvelope</span><span class="p">(</span><span class="n">uptime</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">message</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mMessageEnvelopes</span><span class="p">.</span><span class="n">insertAt</span><span class="p">(</span><span class="n">messageEnvelope</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// Optimization: If the Looper is currently sending a message, then we can skip
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// the call to wake() because the next thing the Looper will do after processing
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// messages is to decide when the next wakeup time should be.  In fact, it does
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// not even matter whether this code is running on the Looper thread.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="n">mSendingMessage</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="c1">// release lock
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Wake the poll loop only when we enqueue a new message at the head.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">wake</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">Looper</span><span class="o">::</span><span class="n">wake</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uint64_t</span> <span class="n">inc</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 向fd中写入信号
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">ssize_t</span> <span class="n">nWrite</span> <span class="o">=</span> <span class="n">TEMP_FAILURE_RETRY</span><span class="p">(</span><span class="n">write</span><span class="p">(</span><span class="n">mWakeEventFd</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="o">&amp;</span><span class="n">inc</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">nWrite</span> <span class="o">!=</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">errno</span> <span class="o">!=</span> <span class="n">EAGAIN</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">LOG_ALWAYS_FATAL</span><span class="p">(</span><span class="s">&#34;Could not write wake signal to fd %d (returned %zd): %s&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                             <span class="n">mWakeEventFd</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">nWrite</span><span class="p">,</span> <span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="开篇问题">开篇问题</h2>
+<p>至此我们基本就明白了MessageQueue的等待、唤醒是如何实现的了。我们再来回答开篇的问题：”如何实现的延迟消息？“</p>
+<p><strong>解答如下：</strong></p>
+<p>在消息进队时设置了延迟（实际时间是延迟时间+当前时间戳），那么这个消息在队列中会按照实际时间(message.when)进行排序，并存入到消息链表中。Java层的Looper会循环调用MessageQueue.next获取消息; 消息队列的next方法，会通过调用native层Looper的pollOnce等待直到队列中第一条消息的when到达，然后Looper就可以将该分发给对应的Handler。</p>
+<p>这其中还有一种特殊情况，当队列为空时，Looper会pollInner(-1)，-1表示等待直到有时间抵达（epoll_wait）。这时，就需要在往队列添加第一条消息后，调用native Looper的wake来唤醒（往<code>mWakeEventFd</code>写入即可实现唤醒）</p>
+<p>再来看“Handler主要解决了什么问题？”</p>
+<p>要回答这个问题，我们先来看一下Android主线程相关的工作内容：</p>
+<ul>
+<li>响应UI事件、用户输入</li>
+<li>Choreographer对VSync和其它frame操作的协调</li>
+<li>可预期的UI变更（比如，我要修改ImageView，官方建议只在UI线程操作，保证这个修改在预期之内）</li>
+<li>在某些情况下，可以丢掉一些操作（比如系统卡顿时，丢掉一部分绘制操作）</li>
+<li>当app退后台，UI操作不需要再执行</li>
+</ul>
+<p>总之各式各样的工作都需要在一个线程中执行，线程管理者就需要合理应对这种情况。可能是基于这个场景的复杂性，以及其他GUI系统的实现，Android的设计者将这样的操作都抽象为一条条消息，当操作发生时，先进入消息队列，再配合一个足够快的高优先级处理线程来不断调度这些消息，再由消息的目标（target，即Handler）来处理这些消息。</p>
+<p>所以Handler主要解决了Android GUI系统的工作调度问题。其次它才提供了应用开发者可以使用的消息框架功能。</p>
+<h2 id="参考文章">参考文章</h2>
+<ol>
+<li><a href="https://developer.android.com/reference/android/os/Handler">Handler doc</a></li>
+<li><a href="http://gityuan.com/2015/12/26/handler-message-framework/">Android消息机制1-Handler(Java层) by Gityuan</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Epoll">epoll</a></li>
+</ol>
+<blockquote>
+<p><strong><code>epoll</code></strong> is a <a href="https://en.wikipedia.org/wiki/Linux_kernel">Linux kernel</a> <a href="https://en.wikipedia.org/wiki/System_call">system call</a> for a scalable I/O event notification mechanism, first introduced in version 2.5.44 of the <a href="https://en.wikipedia.org/wiki/Linux_kernel">Linux kernel</a>.[<a href="https://en.wikipedia.org/wiki/Epoll#cite_note-1">1]</a> <strong>Its function is to monitor multiple file descriptors to see whether I/O is possible on any of them.</strong> It is meant to replace the older <a href="https://en.wikipedia.org/wiki/POSIX">POSIX</a> <a href="https://en.wikipedia.org/wiki/Select_(Unix)"><code>select(2)</code></a> and <code>poll(2)</code> <a href="https://en.wikipedia.org/wiki/System_call">system calls</a>, to achieve better performance in more demanding applications, where the number of watched <a href="https://en.wikipedia.org/wiki/File_descriptor">file descriptors</a> is large (unlike the older system calls, which operate in <a href="https://en.wikipedia.org/wiki/Big_O_notation"><em>O</em></a>(<em>n</em>) time, <code>epoll</code> operates in <em>O</em>(1) time[<a href="https://en.wikipedia.org/wiki/Epoll#cite_note-2">2]</a>).</p>
+</blockquote>
+<ol start="4">
+<li><a href="https://segmentfault.com/a/1190000003063859">Linux IO模式及 select、poll、epoll详解</a></li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-31
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/android/">Android</a>
+          <a href="/tags/handler/">Handler</a>
+          <a href="/tags/message-queue/">Message Queue</a>
+          <a href="/tags/unit-test/">Unit Test</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/dp_oo_theory_and_actions/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">设计模式之美笔记一：面向对象理论与实战</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/large_bitmap_rendering_optimization/">
+            <span class="next-text nav-default">ScrollView中大图片渲染性能测试及优化</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

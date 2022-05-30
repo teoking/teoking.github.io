@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Open GLES on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/open-gles/</link>
+    <description>Recent content in Open GLES on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 06 May 2021 17:42:32 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/open-gles/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Android GLES基础：从TextRender看Renderer实现</title>
+      <link>https://teoking.github.io/post/implement_an_gles_renderer_in_android/</link>
+      <pubDate>Thu, 06 May 2021 17:42:32 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/implement_an_gles_renderer_in_android/</guid>
+      <description>以AOSP Media CTS中的TextureRender的实现来分析和理解OpenGL ES 2.0在Android平台的使用。 通常，实现一个render</description>
+    </item>
+    
+  </channel>
+</rss>

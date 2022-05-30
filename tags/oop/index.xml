@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>OOP on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/oop/</link>
+    <description>Recent content in OOP on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 16 Jun 2021 21:43:11 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/oop/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>设计模式之美笔记二：设计原则</title>
+      <link>https://teoking.github.io/post/dp_principle_theory_and_actions/</link>
+      <pubDate>Wed, 16 Jun 2021 21:43:11 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/dp_principle_theory_and_actions/</guid>
+      <description>理论 SOLID原则 单一职责原则（SRP） Single Responsibility Principle：A class or module should have a single responsibility。 一个类或者模块只负责完成一个职</description>
+    </item>
+    
+    <item>
+      <title>设计模式之美笔记一：面向对象理论与实战</title>
+      <link>https://teoking.github.io/post/dp_oo_theory_and_actions/</link>
+      <pubDate>Thu, 03 Jun 2021 21:37:28 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/dp_oo_theory_and_actions/</guid>
+      <description>面向对象 什么是面向对象？ 什么是面向对象编程？ 面向对象编程是一种编程范式或编程风格。它以类或对象作为组织代码的基本单元，并将封装、抽象、继承、</description>
+    </item>
+    
+  </channel>
+</rss>

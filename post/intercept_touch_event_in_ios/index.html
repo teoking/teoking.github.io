@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>iOS touch事件的拦截 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="最近实现了这样一个需求：当点击一个全屏的modal view时，这个事件同时要“转发”给modal view下面一层中的action view。 分" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/intercept_touch_event_in_ios/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="iOS touch事件的拦截" />
+<meta property="og:description" content="最近实现了这样一个需求：当点击一个全屏的modal view时，这个事件同时要“转发”给modal view下面一层中的action view。 分" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/intercept_touch_event_in_ios/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-06T18:59:24+08:00" />
+<meta property="article:modified_time" content="2021-05-06T18:59:24+08:00" />
+
+<meta itemprop="name" content="iOS touch事件的拦截">
+<meta itemprop="description" content="最近实现了这样一个需求：当点击一个全屏的modal view时，这个事件同时要“转发”给modal view下面一层中的action view。 分"><meta itemprop="datePublished" content="2021-05-06T18:59:24+08:00" />
+<meta itemprop="dateModified" content="2021-05-06T18:59:24+08:00" />
+<meta itemprop="wordCount" content="1171">
+<meta itemprop="keywords" content="iOS," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="iOS touch事件的拦截"/>
+<meta name="twitter:description" content="最近实现了这样一个需求：当点击一个全屏的modal view时，这个事件同时要“转发”给modal view下面一层中的action view。 分"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">iOS touch事件的拦截</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-06 </span>
+        <div class="post-category">
+            <a href="/categories/ui/"> UI </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#实现一touchesbeganwithevent">实现一：touchesBegan:withEvent:</a></li>
+    <li><a href="#实现二uigesturerecognizerdelegate">实现二：UIGestureRecognizerDelegate</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>最近实现了这样一个需求：当点击一个全屏的modal view时，这个事件同时要“转发”给modal view下面一层中的action view。</p>
+<p>分解为技术需求就是获取到modal view的touch点，然后交给action view去处理。</p>
+<p>下面是我实现过程中的两个方案。</p>
+<h1 id="实现一touchesbeganwithevent">实现一：touchesBegan:withEvent:</h1>
+<p>使用UIResponder的<code>touchesBegan:withEvent:</code>来获取touch点坐标，然后转交给action view的持有者，来触发对应的action。</p>
+<p>具体实现步骤：</p>
+<ol>
+<li>在ModalView中加入对touch事件的监测</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="c1">// 由于ModalButton是全屏的，屏幕上绝大部分位置的touch事件都会被如下回调监测到
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">touchesBegan:</span><span class="p">(</span><span class="n">NSSet</span><span class="o">&lt;</span><span class="n">UITouch</span> <span class="o">*&gt;</span> <span class="o">*</span><span class="p">)</span><span class="nv">touches</span> <span class="nf">withEvent:</span><span class="p">(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算出touch事件对应的点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">UITouch</span> <span class="o">*</span><span class="n">aTouch</span> <span class="o">=</span> <span class="p">[</span><span class="n">touches</span> <span class="n">anyObject</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">CGPoint</span> <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="n">aTouch</span> <span class="nl">locationInView</span><span class="p">:</span><span class="nb">self</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// point.x and point.y have the coordinates of the touch
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 将该点记录下来，便于后续通过delegate或其它方式通知给controller
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nb">self</span><span class="p">.</span><span class="n">lastTapPoint</span> <span class="o">=</span> <span class="n">point</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 如果只是想拦截touch手势点，而不是pan手势点，在这里要将位置点清空
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">touchesEnded:</span><span class="p">(</span><span class="n">NSSet</span> <span class="o">*</span><span class="p">)</span><span class="nv">touches</span> <span class="nf">withEvent:</span><span class="p">(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// If pan or move, clear point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nb">self</span><span class="p">.</span><span class="n">lastTapPoint</span> <span class="o">=</span> <span class="n">CGPointZero</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>
+<p>将lastTapPoint通知给ActionView或其持有者</p>
+</li>
+<li>
+<p>判断该点是否在ActionView的frame内</p>
+</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="c1">// 如下代码示例中，我需要判断point是否在imageView或label内
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">-</span> <span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nf">checkPointInsideMenuItem:</span><span class="p">(</span><span class="n">UIView</span> <span class="o">*</span><span class="p">)</span><span class="nv">container</span> <span class="nf">point:</span><span class="p">(</span><span class="n">CGPoint</span><span class="p">)</span><span class="nv">point</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">UIView</span> <span class="o">*</span><span class="n">actionView1</span> <span class="o">=</span> <span class="p">...;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 注意：这里一定要对point做下坐标系转换
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">CGPoint</span> <span class="n">aPoint</span> <span class="o">=</span> <span class="p">[</span><span class="n">container</span> <span class="nl">convertPoint</span><span class="p">:</span><span class="n">point</span> <span class="nl">toView</span><span class="p">:</span><span class="n">actionView1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">imageView</span> <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="n">actionView1</span> <span class="nl">pointInside</span><span class="p">:</span><span class="n">aPoint</span> <span class="nl">withEvent</span><span class="p">:</span><span class="nb">nil</span><span class="p">])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">UIView</span> <span class="o">*</span><span class="n">actionView2</span> <span class="o">=</span> <span class="p">...;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">aPoint</span> <span class="o">=</span> <span class="p">[</span><span class="n">container</span> <span class="nl">convertPoint</span><span class="p">:</span><span class="n">point</span> <span class="nl">toView</span><span class="p">:</span><span class="n">actionView2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">actionView2</span> <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="n">actionView2</span> <span class="nl">pointInside</span><span class="p">:</span><span class="n">aPoint</span> <span class="nl">withEvent</span><span class="p">:</span><span class="nb">nil</span><span class="p">])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">NO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>UIView的<code>convertPoint:toView:</code> 可以很方便的将当前view中的点，转换为目标view坐标系中的点。</p>
+<p>测试结果：</p>
+<p>该实现存在明显bug：有很大概率touchesBegan:withEvent:不能被系统回调，尝试了不少设置，也不能解决。虽然回调不能触发，但是ModalView的tap gesture却可以触发到selector函数。</p>
+<h1 id="实现二uigesturerecognizerdelegate">实现二：UIGestureRecognizerDelegate</h1>
+<p>基于实现一的发现，将目光集中到UITapGestureRecognizer上。查阅文档，这个delegate可以让开发者可以微调手势行为。经过一些测试，可以在<code>gestureRecognizerShouldBegin:</code>这个回调中来获取touch point。</p>
+<p>具体实现步骤：</p>
+<ol>
+<li>
+<p>给ModalView的UITapGestureRecognizer设置UIGestureRecognizerDelegate</p>
+</li>
+<li>
+<p>在delegate中获取tap点：</p>
+</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-objc" data-lang="objc"><span class="line"><span class="cl"><span class="p">-</span> <span class="p">(</span><span class="kt">BOOL</span><span class="p">)</span><span class="nf">gestureRecognizerShouldBegin:</span><span class="p">(</span><span class="n">UIGestureRecognizer</span> <span class="o">*</span><span class="p">)</span><span class="nv">gestureRecognizer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">CGPoint</span> <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="n">gestureRecognizer</span> <span class="nl">locationOfTouch</span><span class="p">:</span><span class="mi">0</span> <span class="nl">inView</span><span class="p">:</span><span class="nb">self</span><span class="p">.</span><span class="n">modalView</span><span class="p">.</span><span class="n">superview</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">self</span><span class="p">.</span><span class="n">lastTapPoint</span> <span class="o">=</span> <span class="n">point</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="3">
+<li><code>checkPointInsideMenuItem</code>的实现不用变化</li>
+</ol>
+<p>经过最终测试，这个方法可以很好的实现ModalView的点击位置获取，从而实现该位置的转发处理。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-06
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/ios/">iOS</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/android_vectordrawable_guides_notes/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Android VectorDrawable系列文章Review</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/getting_started_with_rxswift_and_rxcocoa/">
+            <span class="next-text nav-default">RxSwift和RxCocoa入门</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

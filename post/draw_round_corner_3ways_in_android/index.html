@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Android中绘制圆角的三种方式 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="在iOS平台中，给View指定圆角是很方便的。只需要在代码中设置layer.cornerRadius即可。但在Android平台中，事情却有" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/draw_round_corner_3ways_in_android/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Android中绘制圆角的三种方式" />
+<meta property="og:description" content="在iOS平台中，给View指定圆角是很方便的。只需要在代码中设置layer.cornerRadius即可。但在Android平台中，事情却有" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/draw_round_corner_3ways_in_android/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-06T17:52:46+08:00" />
+<meta property="article:modified_time" content="2021-05-06T17:52:46+08:00" />
+
+<meta itemprop="name" content="Android中绘制圆角的三种方式">
+<meta itemprop="description" content="在iOS平台中，给View指定圆角是很方便的。只需要在代码中设置layer.cornerRadius即可。但在Android平台中，事情却有"><meta itemprop="datePublished" content="2021-05-06T17:52:46+08:00" />
+<meta itemprop="dateModified" content="2021-05-06T17:52:46+08:00" />
+<meta itemprop="wordCount" content="1377">
+<meta itemprop="keywords" content="Android,Canvas," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Android中绘制圆角的三种方式"/>
+<meta name="twitter:description" content="在iOS平台中，给View指定圆角是很方便的。只需要在代码中设置layer.cornerRadius即可。但在Android平台中，事情却有"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Android中绘制圆角的三种方式</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-06 </span>
+        <div class="post-category">
+            <a href="/categories/ui/"> UI </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#demo效果">demo效果</a></li>
+    <li><a href="#实现方式">实现方式</a>
+      <ul>
+        <li><a href="#方法一基于path的实现">方法一：基于<code>Path</code>的实现</a></li>
+        <li><a href="#方法二基于viewoutlineprovider-的实现">方法二：基于<code>ViewOutlineProvider</code> 的实现</a></li>
+        <li><a href="#方法三基于cornerpatheffect来实现">方法三：基于<code>CornerPathEffect</code>来实现</a></li>
+      </ul>
+    </li>
+    <li><a href="#性能">性能</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>在iOS平台中，给View指定圆角是很方便的。只需要在代码中设置<code>layer.cornerRadius</code>即可。但在Android平台中，事情却有些复杂：</p>
+<ul>
+<li>5.0之前，需要以背景贴图、<code>Path</code> 或<code>CornerPathEffect</code>来实现圆角</li>
+<li>5.0之后，新增<code>ViewOutlineProvider</code> 也可以来实现圆角</li>
+</ul>
+<h1 id="demo效果">demo效果</h1>
+<p>demo效果图如下：</p>
+<p><img src="./demo.png" alt="demo.png"></p>
+<p>demo完整代码地址：<a href="https://github.com/teoking/ImageCornerDemo">ImageCornerDemo</a></p>
+<h1 id="实现方式">实现方式</h1>
+<p>下面我们就分别来看一下如何基于<code>Path</code>, <code>CornerPathEffect</code>和<code>ViewOutlineProvider</code> 这三个API实现圆角。</p>
+<h2 id="方法一基于path的实现">方法一：基于<code>Path</code>的实现</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">internal</span> <span class="k">class</span> <span class="nc">ShaderRoundCornerImage</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="p">:</span> <span class="n">CornerResizeView</span><span class="p">(</span><span class="n">context</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">radii</span><span class="p">:</span> <span class="n">FloatArray</span> <span class="p">=</span> <span class="n">floatArrayOf</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="m">20f</span><span class="p">,</span> <span class="m">20f</span><span class="p">,</span> <span class="m">20f</span><span class="p">,</span> <span class="m">20f</span><span class="p">,</span> <span class="m">20f</span><span class="p">,</span> <span class="m">20f</span><span class="p">,</span> <span class="m">20f</span><span class="p">,</span> <span class="m">20f</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@RequiresApi</span><span class="p">(</span><span class="n">Build</span><span class="p">.</span><span class="n">VERSION_CODES</span><span class="p">.</span><span class="n">LOLLIPOP</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onDraw</span><span class="p">(</span><span class="n">canvas</span><span class="p">:</span> <span class="n">Canvas</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">drawPath</span><span class="p">(</span><span class="n">canvas</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Draw the round corner path and the image
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@RequiresApi</span><span class="p">(</span><span class="n">Build</span><span class="p">.</span><span class="n">VERSION_CODES</span><span class="p">.</span><span class="n">LOLLIPOP</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">fun</span> <span class="nf">drawPath</span><span class="p">(</span><span class="n">canvas</span><span class="p">:</span> <span class="n">Canvas</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">path</span><span class="p">.</span><span class="n">reset</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">path</span><span class="p">.</span><span class="n">addRoundRect</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">radii</span><span class="p">,</span> <span class="n">Path</span><span class="p">.</span><span class="n">Direction</span><span class="p">.</span><span class="n">CW</span><span class="p">)</span> <span class="c1">// Step 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">canvas</span><span class="p">.</span><span class="n">drawPath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">paint</span><span class="p">)</span> <span class="c1">// Step 2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">changeCorner</span><span class="p">(</span><span class="n">percent</span><span class="p">:</span> <span class="n">Int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">radius</span> <span class="p">=</span> <span class="n">width</span> <span class="p">*</span> <span class="n">percent</span> <span class="p">/</span> <span class="m">100f</span>
+</span></span><span class="line"><span class="cl">        <span class="n">radii</span><span class="p">.</span><span class="n">fill</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">invalidate</span><span class="p">()</span> <span class="c1">// Step 3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>代码说明：</p>
+<ul>
+<li>Step 1: 给path指定一个圆角矩形，radii是一个包含四组[X, Y]的数组，共八个数</li>
+<li>Step 2: 将path绘制到canvas上</li>
+<li>Step 3: 更新view</li>
+</ul>
+<h2 id="方法二基于viewoutlineprovider-的实现">方法二：基于<code>ViewOutlineProvider</code> 的实现</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// Step 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">private</span> <span class="k">class</span> <span class="nc">ClipOutlineProvider</span><span class="p">(</span><span class="k">var</span> <span class="py">radius</span><span class="p">:</span> <span class="n">Float</span><span class="p">)</span> <span class="p">:</span> <span class="n">ViewOutlineProvider</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">getOutline</span><span class="p">(</span><span class="n">view</span><span class="p">:</span> <span class="n">View</span><span class="p">,</span> <span class="n">outline</span><span class="p">:</span> <span class="n">Outline</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">outline</span><span class="p">.</span><span class="n">setRoundRect</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="n">view</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="n">view</span><span class="p">.</span><span class="n">height</span><span class="p">,</span> <span class="n">radius</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">internal</span> <span class="k">class</span> <span class="nc">OutlineRoundCornerImage</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="p">:</span> <span class="n">CornerResizeView</span><span class="p">(</span><span class="n">context</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">val</span> <span class="py">clipOutlineProvider</span> <span class="p">=</span> <span class="n">ClipOutlineProvider</span><span class="p">(</span><span class="m">20f</span><span class="p">)</span> <span class="c1">// Step 2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="k">init</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">outlineProvider</span> <span class="p">=</span> <span class="n">clipOutlineProvider</span> <span class="c1">// Step 3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">clipToOutline</span> <span class="p">=</span> <span class="k">true</span> <span class="c1">// Step 4
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">changeCorner</span><span class="p">(</span><span class="n">percent</span><span class="p">:</span> <span class="n">Int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">clipOutlineProvider</span><span class="p">.</span><span class="n">radius</span> <span class="p">=</span> <span class="n">width</span> <span class="p">*</span> <span class="n">percent</span> <span class="p">/</span> <span class="m">100f</span>
+</span></span><span class="line"><span class="cl">        <span class="n">invalidateOutline</span><span class="p">()</span> <span class="c1">// Step 5
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>代码说明：</p>
+<ul>
+<li>Step 1: 实现一个圆角<code>ViewOutlineProvider</code></li>
+<li>Step 2: 创建实例并指定圆角弧度</li>
+<li>Step 3: 指定outlineProvider</li>
+<li>Step 4: 设置为true表示使用该outline来裁切view的内容</li>
+<li>Step 5: 更新outline</li>
+</ul>
+<p>需要注意的是，outline需要使用<code>invalidateOutline</code> 来请求更新</p>
+<h2 id="方法三基于cornerpatheffect来实现">方法三：基于<code>CornerPathEffect</code>来实现</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">internal</span> <span class="k">class</span> <span class="nc">CornerEffectCornerImage</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="p">:</span> <span class="n">CornerResizeView</span><span class="p">(</span><span class="n">context</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">cornerEffect</span> <span class="p">=</span> <span class="n">CornerPathEffect</span><span class="p">(</span><span class="m">20f</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onDraw</span><span class="p">(</span><span class="n">canvas</span><span class="p">:</span> <span class="n">Canvas</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// Install the corner effect to the drawable&#39;s paint
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">drawable</span><span class="p">.</span><span class="n">paint</span><span class="p">.</span><span class="n">pathEffect</span> <span class="p">=</span> <span class="n">cornerEffect</span> <span class="c1">// Step 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// Set the bitmap shader to the drawable&#39;s paint
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">drawable</span><span class="p">.</span><span class="n">paint</span><span class="p">.</span><span class="n">shader</span><span class="p">=</span> <span class="n">shader</span>
+</span></span><span class="line"><span class="cl">            <span class="n">drawable</span><span class="p">.</span><span class="n">setBounds</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span><span class="n">width</span><span class="p">,</span><span class="n">height</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">drawable</span><span class="p">.</span><span class="n">draw</span><span class="p">(</span><span class="n">canvas</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">changeCorner</span><span class="p">(</span><span class="n">percent</span><span class="p">:</span> <span class="n">Int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Percent to radius value
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">val</span> <span class="py">radius</span> <span class="p">=</span><span class="n">width</span><span class="p">*</span> <span class="n">percent</span> <span class="p">/</span> <span class="m">100f</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// Update effect with new radius
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">cornerEffect</span> <span class="p">=</span> <span class="n">CornerPathEffect</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span> <span class="c1">// Step 2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">        <span class="n">invalidate</span><span class="p">()</span> <span class="c1">// Step 3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>代码说明：</p>
+<ul>
+<li>Step 1: 给drawable的paint指定cornerEffect</li>
+<li>Step 2: 重建cornerEffect</li>
+<li>Step 3: 更新view</li>
+</ul>
+<h1 id="性能">性能</h1>
+<p><img src="./outline.gif" alt="outline.gif"></p>
+<p>Outline方式</p>
+<p><img src="./shader.gif" alt="shader.gif"></p>
+<p>Path方式</p>
+<p><img src="./corner2.gif" alt="corner2.gif"></p>
+<p>Corner方式</p>
+<p>通过<strong>HWUI呈现模式分析</strong> 可以看出，三种实现方式，性能上差异不大（Outline方式性能应该更高一些）。</p>
+<h1 id="总结">总结</h1>
+<ul>
+<li>通常情况下，<code>Path</code>/<code>ViewOutlineProvider</code>/<code>CornerEffect</code>三种方式性能相当，也都可以在Android 5.0+版本中正常工作（无论hardware/software layer）</li>
+<li>当View的圆角需要频繁变化时，<code>ViewOutlineProvider</code>方式性能更高，因为它的<code>invalidateOutline</code> 函数只会让outline重建和更新，而不是整个view（<code>invalidate</code> 会更新整个view）</li>
+<li>从功能上，<code>Path</code>/<code>ViewOutlineProvider</code>是比较接近的，不过后者不支持<code>setPath</code>设置复杂形状（如三角形），无法实现复杂的边框裁剪，只支持规则形状如rect, round rect, oval.</li>
+<li><code>CornerEffect</code>等<code>PathEffect</code>的继承者，更适合于实现复杂的边框效果，比如虚线（<code>DashPathEffect</code>）、离散线（<code>DiscretePathEffect</code>）等</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-06
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/android/">Android</a>
+          <a href="/tags/canvas/">Canvas</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/lex_fridman_learn_and_master_a_skill_note/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Lex Fridman: How to learn and master a new skill简评</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/kotlin_coroutine_in_action/">
+            <span class="next-text nav-default">Kotlin Coroutine in Action</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

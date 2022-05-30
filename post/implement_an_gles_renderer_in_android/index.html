@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Android GLES基础：从TextRender看Renderer实现 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="以AOSP Media CTS中的TextureRender的实现来分析和理解OpenGL ES 2.0在Android平台的使用。 通常，实现一个render" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/implement_an_gles_renderer_in_android/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Android GLES基础：从TextRender看Renderer实现" />
+<meta property="og:description" content="以AOSP Media CTS中的TextureRender的实现来分析和理解OpenGL ES 2.0在Android平台的使用。 通常，实现一个render" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/implement_an_gles_renderer_in_android/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-06T17:42:32+08:00" />
+<meta property="article:modified_time" content="2021-05-06T17:42:32+08:00" />
+
+<meta itemprop="name" content="Android GLES基础：从TextRender看Renderer实现">
+<meta itemprop="description" content="以AOSP Media CTS中的TextureRender的实现来分析和理解OpenGL ES 2.0在Android平台的使用。 通常，实现一个render"><meta itemprop="datePublished" content="2021-05-06T17:42:32+08:00" />
+<meta itemprop="dateModified" content="2021-05-06T17:42:32+08:00" />
+<meta itemprop="wordCount" content="4496">
+<meta itemprop="keywords" content="Android,Open GLES," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Android GLES基础：从TextRender看Renderer实现"/>
+<meta name="twitter:description" content="以AOSP Media CTS中的TextureRender的实现来分析和理解OpenGL ES 2.0在Android平台的使用。 通常，实现一个render"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Android GLES基础：从TextRender看Renderer实现</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-06 </span>
+        <div class="post-category">
+            <a href="/categories/ui/"> UI </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents"></nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>以AOSP Media CTS中的<a href="https://android.googlesource.com/platform/cts/+/master/tests/tests/media/src/android/media/cts/TextureRender.java">TextureRender</a>的实现来分析和理解OpenGL ES 2.0在Android平台的使用。</p>
+<p>通常，实现一个renderer需要实现 <code>Renderer</code>和<code>SurfaceTexture.OnFrameAvailableListener</code> 两个接口。</p>
+<p>下面分别看一下这两个接口的定义：</p>
+<ul>
+<li>
+<p><strong>Renderer</strong></p>
+<blockquote>
+<p>The renderer is responsible for making OpenGL calls to render a frame.
+GLSurfaceView clients typically create their own classes that implement this interface, and then call GLSurfaceView#setRenderer to register the renderer with the GLSurfaceView.</p>
+</blockquote>
+<p>Renderer是用来让OpenGL渲染每一帧的。GLSurfaceView客户端通常需要自行实现这个接口，然后将实现用setRenderer设置给GLSurfaceView。</p>
+<p>实现Renderer时要注意下面两方面问题：</p>
+<ol>
+<li>在线程方面，为了和UI线程解耦而获得性能方面的提升，renderer会在一个独立的线程被调用。客户端代码（比如运行在UI线程的输入子系统）如果要和renderer进行通信，除了使用Java中标准的跨线程通信技术外，还可以使用更便捷的：<a href="https://developer.android.com/reference/android/opengl/GLSurfaceView#queueEvent(java.lang.Runnable)">GLSurfaceView#queueEvent(Runnable)</a>。</li>
+<li><a href="https://developer.android.com/reference/android/opengl/GLSurfaceView.Renderer?hl=en#egl-context-lost">EGL Context丢失问题</a>。在一些情况下，EGL渲染上下文是会丢失的。常见的场景如设备从睡眠中唤醒。当一个EGL context丢失后，所有和它相关的OpenGL资源（如纹理）都会被自动删除。因此，为了保证渲染的正确性，renderer必须（在<a href="https://developer.android.com/reference/android/opengl/GLSurfaceView.Renderer#onSurfaceCreated(javax.microedition.khronos.opengles.GL10,%20javax.microedition.khronos.egl.EGLConfig)">onSurfaceCreated(javax.microedition.khronos.opengles.GL10, javax.microedition.khronos.egl.EGLConfig)</a>这个方法中）重建所有已丢失但仍需要的资源。</li>
+</ol>
+</li>
+<li>
+<p><strong>SurfaceTexture.OnFrameAvailableListener</strong></p>
+</li>
+</ul>
+<p>下面看一个<code>GLSurfaceView</code>的实现（这里使用了今天的主角<code>TextureRender</code>来作为渲染器）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Camera2PreviewView</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">attrs</span><span class="p">:</span> <span class="n">AttributeSet</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="p">:</span> <span class="n">AutoFitGlSurfaceView</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">val</span> <span class="py">mRenderer</span><span class="p">:</span> <span class="n">Camera2PreviewRender</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">mPreviewListener</span><span class="p">:</span> <span class="n">Camera2PreviewViewListener</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">init</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">setEGLContextClientVersion</span><span class="p">(</span><span class="m">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mRenderer</span> <span class="p">=</span> <span class="n">Camera2PreviewRender</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">setRenderer</span><span class="p">(</span><span class="n">mRenderer</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">setSurfaceListener</span><span class="p">(</span><span class="n">listener</span><span class="p">:</span> <span class="n">Camera2PreviewViewListener</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mPreviewListener</span> <span class="p">=</span> <span class="n">listener</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">onDestroy</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mRenderer</span><span class="p">.</span><span class="n">onDestroy</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">inner</span> <span class="k">class</span> <span class="nc">Camera2PreviewRender</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="p">:</span> <span class="n">Renderer</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SurfaceTexture</span><span class="p">.</span><span class="n">OnFrameAvailableListener</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">private</span> <span class="k">val</span> <span class="py">mTextureRender</span><span class="p">:</span> <span class="n">TextureRender</span> <span class="p">=</span> <span class="n">TextureRender</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">private</span> <span class="k">lateinit</span> <span class="k">var</span> <span class="py">mSurfaceTexture</span><span class="p">:</span> <span class="n">SurfaceTexture</span>
+</span></span><span class="line"><span class="cl">        <span class="k">private</span> <span class="k">lateinit</span> <span class="k">var</span> <span class="py">mSurface</span><span class="p">:</span> <span class="n">Surface</span>
+</span></span><span class="line"><span class="cl">        <span class="k">private</span> <span class="k">var</span> <span class="py">updateSurface</span> <span class="p">=</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 当surface被创建或重建时调用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 也就是说在渲染线程启动和EGL context丢失时调用。由于这个方法会在渲染一开始调用，所以这里很适合
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 用来创建渲染需要的资源，比如创建纹理。另外要注意的是，EGL context丢失时，与之相关的资源都会被
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 自动释放, 所以不需要手动调用glDelete（如glDeleteTextures）这类方法来释放资源。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onSurfaceCreated</span><span class="p">(</span><span class="n">gl</span><span class="p">:</span> <span class="n">GL10</span><span class="p">?,</span> <span class="n">config</span><span class="p">:</span> <span class="n">EGLConfig</span><span class="p">?)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mTextureRender</span><span class="p">.</span><span class="n">surfaceCreated</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">             * Create the SurfaceTexture that will feed this textureID
+</span></span></span><span class="line"><span class="cl"><span class="cm">             */</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mSurfaceTexture</span> <span class="p">=</span> <span class="n">SurfaceTexture</span><span class="p">(</span><span class="n">mTextureRender</span><span class="p">.</span><span class="n">textureId</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mSurfaceTexture</span><span class="p">.</span><span class="n">setOnFrameAvailableListener</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">mSurface</span> <span class="p">=</span> <span class="n">Surface</span><span class="p">(</span><span class="n">mSurfaceTexture</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">post</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">mPreviewListener</span><span class="o">?.</span><span class="n">onSurfaceCreated</span><span class="p">(</span><span class="n">mSurface</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 当OpenGL ES surface刚创建或者大小有变化时被调用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 通常需要在这个方法里设置viewport
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onSurfaceChanged</span><span class="p">(</span><span class="n">gl</span><span class="p">:</span> <span class="n">GL10</span><span class="p">?,</span> <span class="n">width</span><span class="p">:</span> <span class="n">Int</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="n">Int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mPreviewListener</span><span class="o">?.</span><span class="n">onSurfaceChanged</span><span class="p">(</span><span class="n">gl</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 在当前帧需要绘制时被调用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 通常需要在这个方法里各种绘制
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onDrawFrame</span><span class="p">(</span><span class="n">gl</span><span class="p">:</span> <span class="n">GL10</span><span class="p">?)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">synchronized</span><span class="p">(</span><span class="k">this</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">updateSurface</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">mSurfaceTexture</span><span class="p">.</span><span class="n">updateTexImage</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">updateSurface</span> <span class="p">=</span> <span class="k">false</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mTextureRender</span><span class="p">.</span><span class="n">drawFrame</span><span class="p">(</span><span class="n">mSurfaceTexture</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 当一个流式帧可用时，该回调方法被调用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onFrameAvailable</span><span class="p">(</span><span class="n">surfaceTexture</span><span class="p">:</span> <span class="n">SurfaceTexture</span><span class="p">?)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">synchronized</span><span class="p">(</span><span class="k">this</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">updateSurface</span> <span class="p">=</span> <span class="k">true</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">fun</span> <span class="nf">onDestroy</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mSurface</span><span class="p">.</span><span class="n">release</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上述代码已经将<code>onSurfaceCreated</code>和<code>onDrawFrame</code>事件传递给了<code>TextureRender</code> 。下面看下<code>TextureRender</code> 在这两个事件中都做了什么事情：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
+</span><span class="lnt">214
+</span><span class="lnt">215
+</span><span class="lnt">216
+</span><span class="lnt">217
+</span><span class="lnt">218
+</span><span class="lnt">219
+</span><span class="lnt">220
+</span><span class="lnt">221
+</span><span class="lnt">222
+</span><span class="lnt">223
+</span><span class="lnt">224
+</span><span class="lnt">225
+</span><span class="lnt">226
+</span><span class="lnt">227
+</span><span class="lnt">228
+</span><span class="lnt">229
+</span><span class="lnt">230
+</span><span class="lnt">231
+</span><span class="lnt">232
+</span><span class="lnt">233
+</span><span class="lnt">234
+</span><span class="lnt">235
+</span><span class="lnt">236
+</span><span class="lnt">237
+</span><span class="lnt">238
+</span><span class="lnt">239
+</span><span class="lnt">240
+</span><span class="lnt">241
+</span><span class="lnt">242
+</span><span class="lnt">243
+</span><span class="lnt">244
+</span><span class="lnt">245
+</span><span class="lnt">246
+</span><span class="lnt">247
+</span><span class="lnt">248
+</span><span class="lnt">249
+</span><span class="lnt">250
+</span><span class="lnt">251
+</span><span class="lnt">252
+</span><span class="lnt">253
+</span><span class="lnt">254
+</span><span class="lnt">255
+</span><span class="lnt">256
+</span><span class="lnt">257
+</span><span class="lnt">258
+</span><span class="lnt">259
+</span><span class="lnt">260
+</span><span class="lnt">261
+</span><span class="lnt">262
+</span><span class="lnt">263
+</span><span class="lnt">264
+</span><span class="lnt">265
+</span><span class="lnt">266
+</span><span class="lnt">267
+</span><span class="lnt">268
+</span><span class="lnt">269
+</span><span class="lnt">270
+</span><span class="lnt">271
+</span><span class="lnt">272
+</span><span class="lnt">273
+</span><span class="lnt">274
+</span><span class="lnt">275
+</span><span class="lnt">276
+</span><span class="lnt">277
+</span><span class="lnt">278
+</span><span class="lnt">279
+</span><span class="lnt">280
+</span><span class="lnt">281
+</span><span class="lnt">282
+</span><span class="lnt">283
+</span><span class="lnt">284
+</span><span class="lnt">285
+</span><span class="lnt">286
+</span><span class="lnt">287
+</span><span class="lnt">288
+</span><span class="lnt">289
+</span><span class="lnt">290
+</span><span class="lnt">291
+</span><span class="lnt">292
+</span><span class="lnt">293
+</span><span class="lnt">294
+</span><span class="lnt">295
+</span><span class="lnt">296
+</span><span class="lnt">297
+</span><span class="lnt">298
+</span><span class="lnt">299
+</span><span class="lnt">300
+</span><span class="lnt">301
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">TextureRender</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">TAG</span> <span class="o">=</span> <span class="s">&#34;TextureRender&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// float size = 4 bytes
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">FLOAT_SIZE_BYTES</span> <span class="o">=</span> <span class="n">4</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 一组数据的大小，这里是5个float: X, Y, Z, U, V
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">TRIANGLE_VERTICES_DATA_STRIDE_BYTES</span> <span class="o">=</span> <span class="n">5</span> <span class="o">*</span> <span class="n">FLOAT_SIZE_BYTES</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 顶点X, Y, Z的位置偏移
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">TRIANGLE_VERTICES_DATA_POS_OFFSET</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// U, V数据的位置偏移
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">TRIANGLE_VERTICES_DATA_UV_OFFSET</span> <span class="o">=</span> <span class="n">3</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// counterclockwise 逆时针须组织的顶点数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">float</span><span class="o">[]</span> <span class="n">mTriangleVerticesData</span> <span class="o">=</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// X, Y, Z, U, V
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">0</span><span class="o">.</span><span class="na">f</span><span class="o">,</span> <span class="n">0</span><span class="o">.</span><span class="na">f</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">1</span><span class="o">.</span><span class="na">f</span><span class="o">,</span> <span class="n">0</span><span class="o">.</span><span class="na">f</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">            <span class="o">-</span><span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">0</span><span class="o">.</span><span class="na">f</span><span class="o">,</span> <span class="n">1</span><span class="o">.</span><span class="na">f</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">1</span><span class="o">.</span><span class="na">f</span><span class="o">,</span> <span class="n">1</span><span class="o">.</span><span class="na">f</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">    <span class="o">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 顶点数据buffer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="n">FloatBuffer</span> <span class="n">mTriangleVertices</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 顶点shader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">VERTEX_SHADER</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">            <span class="s">&#34;uniform mat4 uMVPMatrix;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;uniform mat4 uSTMatrix;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;attribute vec4 aPosition;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;attribute vec4 aTextureCoord;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;varying vec2 vTextureCoord;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;void main() {\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;  gl_Position = uMVPMatrix * aPosition;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;  vTextureCoord = (uSTMatrix * aTextureCoord).xy;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;}\n&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 片段shader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">FRAGMENT_SHADER</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">            <span class="s">&#34;#extension GL_OES_EGL_image_external : require\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;precision mediump float;\n&#34;</span> <span class="o">+</span>      <span class="c1">// highp here doesn&#39;t seem to matter
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="s">&#34;varying vec2 vTextureCoord;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;uniform samplerExternalOES sTexture;\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;void main() {\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;  gl_FragColor = texture2D(sTexture, vTextureCoord);\n&#34;</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                    <span class="s">&#34;}\n&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// MVP矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">float</span><span class="o">[]</span> <span class="n">mMVPMatrix</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">float</span><span class="o">[</span><span class="n">16</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ST矩阵(纹理坐标矩阵)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">float</span><span class="o">[]</span> <span class="n">mSTMatrix</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">float</span><span class="o">[</span><span class="n">16</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 程序句柄
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mProgram</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 纹理id
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">mTextureID</span> <span class="o">=</span> <span class="o">-</span><span class="n">12345</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 统一变量uMVPMatrix句柄
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">muMVPMatrixHandle</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 统一变量uSTMatrix句柄
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">muSTMatrixHandle</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 属性aPosition句柄
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">maPositionHandle</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 属性aTextureCoord句柄
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">maTextureHandle</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">TextureRender</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 初始化顶点字节缓冲区
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// nativeOrder指的是当前下层平台的字节序
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mTriangleVertices</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="o">.</span><span class="na">allocateDirect</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">mTriangleVerticesData</span><span class="o">.</span><span class="na">length</span> <span class="o">*</span> <span class="n">FLOAT_SIZE_BYTES</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">order</span><span class="o">(</span><span class="n">ByteOrder</span><span class="o">.</span><span class="na">nativeOrder</span><span class="o">()).</span><span class="na">asFloatBuffer</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// put将顶点数据传递到缓冲区中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// position指定了顶点缓冲区的位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mTriangleVertices</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">mTriangleVerticesData</span><span class="o">).</span><span class="na">position</span><span class="o">(</span><span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 初始化纹理坐标矩阵mSTMatrix为单位矩阵(identity matrix)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Matrix</span><span class="o">.</span><span class="na">setIdentityM</span><span class="o">(</span><span class="n">mSTMatrix</span><span class="o">,</span> <span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getTextureId</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">mTextureID</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">drawFrame</span><span class="o">(</span><span class="n">SurfaceTexture</span> <span class="n">st</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;onDrawFrame start&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 从SurfaceTexture中获取由最近一次updateTexImage设置的纹理图的4x4纹理坐标变换矩阵，并存储到mSTMatrix中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">st</span><span class="o">.</span><span class="na">getTransformMatrix</span><span class="o">(</span><span class="n">mSTMatrix</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 指定用以清除颜色缓冲区的颜色
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glClearColor</span><span class="o">(</span><span class="n">0</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">0</span><span class="o">.</span><span class="na">0f</span><span class="o">,</span> <span class="n">1</span><span class="o">.</span><span class="na">0f</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 使用上面设置的颜色(当前的)，清除颜色缓冲区
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 这里同时清除GL_DEPTH_BUFFER_BIT和GL_COLOR_BUFFER_BIT缓冲区
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glClear</span><span class="o">(</span><span class="n">GLES20</span><span class="o">.</span><span class="na">GL_DEPTH_BUFFER_BIT</span> <span class="o">|</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_COLOR_BUFFER_BIT</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 设置mProgram为活动程序，这样才可以开始渲染
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glUseProgram</span><span class="o">(</span><span class="n">mProgram</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glUseProgram&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 激活纹理单元GL_TEXTURE0，激活后GL_TEXTURE0成为当前活动纹理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glActiveTexture</span><span class="o">(</span><span class="n">GLES20</span><span class="o">.</span><span class="na">GL_TEXTURE0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 绑定纹理mTextureID到当前活动纹理，即GL_TEXTURE0
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glBindTexture</span><span class="o">(</span><span class="n">GLES11Ext</span><span class="o">.</span><span class="na">GL_TEXTURE_EXTERNAL_OES</span><span class="o">,</span> <span class="n">mTextureID</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 移动顶点buffer位置到X, Y, Z顶点数据开始位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mTriangleVertices</span><span class="o">.</span><span class="na">position</span><span class="o">(</span><span class="n">TRIANGLE_VERTICES_DATA_POS_OFFSET</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 指定顶点数组
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// index: maPositionHandle
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// size: 3 表示顶点属性的分量数量为3，也意味着数据以三个分量存储(即X, Y, Z)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// type: GL_FLOAT 表示数据格式为浮点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// normalized: false 非浮点数据格式在转换为浮点值时是否应该规范化
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// stride: TRIANGLE_VERTICES_DATA_STRIDE_BYTES stride指定顶点索引I和(I+1)表示的顶点数据之间的位移
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// ptr: mTriangleVertices 顶点属性数据buffer的指针
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glVertexAttribPointer</span><span class="o">(</span><span class="n">maPositionHandle</span><span class="o">,</span> <span class="n">3</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_FLOAT</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">TRIANGLE_VERTICES_DATA_STRIDE_BYTES</span><span class="o">,</span> <span class="n">mTriangleVertices</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glVertexAttribPointer maPosition&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 启用顶点属性数组maPositionHandle
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glEnableVertexAttribArray</span><span class="o">(</span><span class="n">maPositionHandle</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glEnableVertexAttribArray maPositionHandle&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 移动顶点buffer到U, V顶点数据起始位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mTriangleVertices</span><span class="o">.</span><span class="na">position</span><span class="o">(</span><span class="n">TRIANGLE_VERTICES_DATA_UV_OFFSET</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 参见maPositionHandle数组的指定
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glVertexAttribPointer</span><span class="o">(</span><span class="n">maTextureHandle</span><span class="o">,</span> <span class="n">2</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_FLOAT</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">TRIANGLE_VERTICES_DATA_STRIDE_BYTES</span><span class="o">,</span> <span class="n">mTriangleVertices</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glVertexAttribPointer maTextureHandle&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 启用顶点属性数组maTextureHandle
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glEnableVertexAttribArray</span><span class="o">(</span><span class="n">maTextureHandle</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glEnableVertexAttribArray maTextureHandle&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 初始化MVP坐标矩阵为单位矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Matrix</span><span class="o">.</span><span class="na">setIdentityM</span><span class="o">(</span><span class="n">mMVPMatrix</span><span class="o">,</span> <span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// glUniform这类函数用来加载统一变量类型到目标位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 加载mMVPMatrix到muMVPMatrixHandle
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glUniformMatrix4fv</span><span class="o">(</span><span class="n">muMVPMatrixHandle</span><span class="o">,</span> <span class="n">1</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="n">mMVPMatrix</span><span class="o">,</span> <span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 加载mSTMatrix到muSTMatrixHandle
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glUniformMatrix4fv</span><span class="o">(</span><span class="n">muSTMatrixHandle</span><span class="o">,</span> <span class="n">1</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="n">mSTMatrix</span><span class="o">,</span> <span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 绘制三角形图元
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// GL_TRIANGLE_STRIP指定以三角形网格(triangle mesh)方式绘制
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// triangle mesh是一系列相连的三角形，它们的顶点是共享的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">        以mTriangleVerticesData数据为例：
+</span></span></span><span class="line"><span class="cl"><span class="cm">            -1.0f, -1.0f, 0, 0.f, 0.f, --&gt; A
+</span></span></span><span class="line"><span class="cl"><span class="cm">            1.0f, -1.0f, 0, 1.f, 0.f,  --&gt; B
+</span></span></span><span class="line"><span class="cl"><span class="cm">            -1.0f, 1.0f, 0, 0.f, 1.f,  --&gt; C
+</span></span></span><span class="line"><span class="cl"><span class="cm">            1.0f, 1.0f, 0, 1.f, 1.f,   --&gt; D
+</span></span></span><span class="line"><span class="cl"><span class="cm">        那么下面的代码，就会绘制两个三角形，顶点分别是ABC, CBD，这样实际上是绘制了一个矩形
+</span></span></span><span class="line"><span class="cl"><span class="cm">        */</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GLES20</span><span class="o">.</span><span class="na">glDrawArrays</span><span class="o">(</span><span class="n">GLES20</span><span class="o">.</span><span class="na">GL_TRIANGLE_STRIP</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">4</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glDrawArrays&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 阻塞直到上述GL命令都执行完
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glFinish</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Initializes GL state.  Call this after the EGL surface has been created and made current.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">surfaceCreated</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 根据顶点shader和片段shader代码创建程序
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// createProgram方法是一个创建程序的实现样板，后续可直接复用
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">mProgram</span> <span class="o">=</span> <span class="n">createProgram</span><span class="o">(</span><span class="n">VERTEX_SHADER</span><span class="o">,</span> <span class="n">FRAGMENT_SHADER</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">mProgram</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="s">&#34;failed creating program&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 获取顶点属性aPosition的位置, 其类型为有4个分量的浮点向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">maPositionHandle</span> <span class="o">=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetAttribLocation</span><span class="o">(</span><span class="n">mProgram</span><span class="o">,</span> <span class="s">&#34;aPosition&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glGetAttribLocation aPosition&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">maPositionHandle</span> <span class="o">==</span> <span class="o">-</span><span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="s">&#34;Could not get attrib location for aPosition&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 获取顶点属性aTextureCoord的位置, 其类型为有4个分量的浮点向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">maTextureHandle</span> <span class="o">=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetAttribLocation</span><span class="o">(</span><span class="n">mProgram</span><span class="o">,</span> <span class="s">&#34;aTextureCoord&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glGetAttribLocation aTextureCoord&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">maTextureHandle</span> <span class="o">==</span> <span class="o">-</span><span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="s">&#34;Could not get attrib location for aTextureCoord&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 获取统一变量uMVPMatrix的位置, 其类型为4x4浮点矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">muMVPMatrixHandle</span> <span class="o">=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetUniformLocation</span><span class="o">(</span><span class="n">mProgram</span><span class="o">,</span> <span class="s">&#34;uMVPMatrix&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glGetUniformLocation uMVPMatrix&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">muMVPMatrixHandle</span> <span class="o">==</span> <span class="o">-</span><span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="s">&#34;Could not get attrib location for uMVPMatrix&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 获取统一变量uSTMatrix的位置, 其类型为4x4浮点矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">muSTMatrixHandle</span> <span class="o">=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetUniformLocation</span><span class="o">(</span><span class="n">mProgram</span><span class="o">,</span> <span class="s">&#34;uSTMatrix&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glGetUniformLocation uSTMatrix&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">muSTMatrixHandle</span> <span class="o">==</span> <span class="o">-</span><span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="s">&#34;Could not get attrib location for uSTMatrix&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 生成一个纹理对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span><span class="o">[]</span> <span class="n">textures</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">1</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GLES20</span><span class="o">.</span><span class="na">glGenTextures</span><span class="o">(</span><span class="n">1</span><span class="o">,</span> <span class="n">textures</span><span class="o">,</span> <span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">mTextureID</span> <span class="o">=</span> <span class="n">textures</span><span class="o">[</span><span class="n">0</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 指定纹理对象目标，GL_TEXTURE_EXTERNAL_OES是外部GLES纹理，其与传统GLES纹理（GL_TEXTURE_2D）的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 主要优势是前者能够直接从BufferQueue数据进行渲染
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 详细区别见如下文档：
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// https://source.android.google.cn/devices/graphics/arch-st?hl=zh-cn
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glBindTexture</span><span class="o">(</span><span class="n">GLES11Ext</span><span class="o">.</span><span class="na">GL_TEXTURE_EXTERNAL_OES</span><span class="o">,</span> <span class="n">mTextureID</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glBindTexture mTextureID&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 下面的纹理处理函数详情见文档：
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 设置纹理对象目标的缩小处理函数为GL_NEAREST(从最靠近纹理坐标的纹理中获取一个单点样本)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glTexParameterf</span><span class="o">(</span><span class="n">GLES11Ext</span><span class="o">.</span><span class="na">GL_TEXTURE_EXTERNAL_OES</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_TEXTURE_MIN_FILTER</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_NEAREST</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 设置纹理对象目标的放大函数为GL_LINEAR(从最靠近纹理坐标的纹理中获取一个双线性样本)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glTexParameterf</span><span class="o">(</span><span class="n">GLES11Ext</span><span class="o">.</span><span class="na">GL_TEXTURE_EXTERNAL_OES</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_TEXTURE_MAG_FILTER</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_LINEAR</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 纹理包装模式是定义坐标超出[0.0, 1.0]范围时发生的行为
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">//  设置纹理对象目标的纹理包装模式(S坐标)为GL_CLAMP_TO_EDGE(限定读取纹理的边缘)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glTexParameteri</span><span class="o">(</span><span class="n">GLES11Ext</span><span class="o">.</span><span class="na">GL_TEXTURE_EXTERNAL_OES</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_TEXTURE_WRAP_S</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_CLAMP_TO_EDGE</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//  设置纹理对象目标的纹理包装模式(T坐标)为GL_CLAMP_TO_EDGE(限定读取纹理的边缘)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glTexParameteri</span><span class="o">(</span><span class="n">GLES11Ext</span><span class="o">.</span><span class="na">GL_TEXTURE_EXTERNAL_OES</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_TEXTURE_WRAP_T</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_CLAMP_TO_EDGE</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glTexParameter&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Replaces the fragment shader.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">changeFragmentShader</span><span class="o">(</span><span class="n">String</span> <span class="n">fragmentShader</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">GLES20</span><span class="o">.</span><span class="na">glDeleteProgram</span><span class="o">(</span><span class="n">mProgram</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">mProgram</span> <span class="o">=</span> <span class="n">createProgram</span><span class="o">(</span><span class="n">VERTEX_SHADER</span><span class="o">,</span> <span class="n">fragmentShader</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">mProgram</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="s">&#34;failed creating program&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">loadShader</span><span class="o">(</span><span class="kt">int</span> <span class="n">shaderType</span><span class="o">,</span> <span class="n">String</span> <span class="n">source</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 创建一个着色器对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span> <span class="n">shader</span> <span class="o">=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glCreateShader</span><span class="o">(</span><span class="n">shaderType</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glCreateShader type=&#34;</span> <span class="o">+</span> <span class="n">shaderType</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 为着色器提供源代码
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glShaderSource</span><span class="o">(</span><span class="n">shader</span><span class="o">,</span> <span class="n">source</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 编译着色器
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glCompileShader</span><span class="o">(</span><span class="n">shader</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 检查编译结果
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span><span class="o">[]</span> <span class="n">compiled</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">1</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 使用glGetShaderiv查询shader对象信息，指定GL_COMPILE_STATUS代表查询编译信息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetShaderiv</span><span class="o">(</span><span class="n">shader</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_COMPILE_STATUS</span><span class="o">,</span> <span class="n">compiled</span><span class="o">,</span> <span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// GL_FALSE == 0, GL_TRUE != 0
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">compiled</span><span class="o">[</span><span class="n">0</span><span class="o">]</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&#34;Could not compile shader &#34;</span> <span class="o">+</span> <span class="n">shaderType</span> <span class="o">+</span> <span class="s">&#34;:&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 查询编译日志
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&#34; &#34;</span> <span class="o">+</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetShaderInfoLog</span><span class="o">(</span><span class="n">shader</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 编译失败时，要删除shader对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">GLES20</span><span class="o">.</span><span class="na">glDeleteShader</span><span class="o">(</span><span class="n">shader</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">shader</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 返回最终的shader对象句柄
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">return</span> <span class="n">shader</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">createProgram</span><span class="o">(</span><span class="n">String</span> <span class="n">vertexSource</span><span class="o">,</span> <span class="n">String</span> <span class="n">fragmentSource</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 构建顶点着色器
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span> <span class="n">vertexShader</span> <span class="o">=</span> <span class="n">loadShader</span><span class="o">(</span><span class="n">GLES20</span><span class="o">.</span><span class="na">GL_VERTEX_SHADER</span><span class="o">,</span> <span class="n">vertexSource</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">vertexShader</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 构建片段着色器
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span> <span class="n">pixelShader</span> <span class="o">=</span> <span class="n">loadShader</span><span class="o">(</span><span class="n">GLES20</span><span class="o">.</span><span class="na">GL_FRAGMENT_SHADER</span><span class="o">,</span> <span class="n">fragmentSource</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">pixelShader</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 创建一个程序
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span> <span class="n">program</span> <span class="o">=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glCreateProgram</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glCreateProgram&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">program</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&#34;Could not create program&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 连接顶点着色器到程序
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glAttachShader</span><span class="o">(</span><span class="n">program</span><span class="o">,</span> <span class="n">vertexShader</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glAttachShader&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 连接片段着色器到程序
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glAttachShader</span><span class="o">(</span><span class="n">program</span><span class="o">,</span> <span class="n">pixelShader</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">checkGlError</span><span class="o">(</span><span class="s">&#34;glAttachShader&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 链接程序, 在这一步中将生成最终在硬件上运行的指令
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glLinkProgram</span><span class="o">(</span><span class="n">program</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span><span class="o">[]</span> <span class="n">linkStatus</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">1</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 链接完成后，使用glGetProgramiv来查询链接状态
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetProgramiv</span><span class="o">(</span><span class="n">program</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_LINK_STATUS</span><span class="o">,</span> <span class="n">linkStatus</span><span class="o">,</span> <span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">linkStatus</span><span class="o">[</span><span class="n">0</span><span class="o">]</span> <span class="o">!=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_TRUE</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="s">&#34;Could not link program: &#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetProgramInfoLog</span><span class="o">(</span><span class="n">program</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="n">GLES20</span><span class="o">.</span><span class="na">glDeleteProgram</span><span class="o">(</span><span class="n">program</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">program</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">program</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">checkGlError</span><span class="o">(</span><span class="n">String</span> <span class="n">op</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">error</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="o">((</span><span class="n">error</span> <span class="o">=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">glGetError</span><span class="o">())</span> <span class="o">!=</span> <span class="n">GLES20</span><span class="o">.</span><span class="na">GL_NO_ERROR</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">TAG</span><span class="o">,</span> <span class="n">op</span> <span class="o">+</span> <span class="s">&#34;: glError &#34;</span> <span class="o">+</span> <span class="n">error</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="n">op</span> <span class="o">+</span> <span class="s">&#34;: glError &#34;</span> <span class="o">+</span> <span class="n">error</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>总的来看，<code>TextureRender</code>共分为三部分（注意时序关系）：</p>
+<ol>
+<li>shader源代码，顶点数据定义，缓冲区对象，以及在构造器中进行数据初始化</li>
+<li>surface创建（重建）时的初始化：编译生成程序，获取程序中各种变量的句柄，初始化MVP和纹理矩阵，生成纹理ID，最后设置外部GLES纹理（<code>GL_TEXTURE_EXTERNAL_OES</code>）的各种参数</li>
+<li>纹理绘制的实现：清除颜色缓冲区，设置活动程序，激活&amp;绑定纹理，顶点数组设置&amp;启用，MVP和ST矩阵加载，绘制矩形图元（<code>GL_TRIANGLE_STRIP</code>），最后等待绘制命令执行完成。（由于这个render实现使用的是GLES外部纹理，所以绘制中没有如<code>glTexImage2D</code>这样的数据加载代码）</li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-06
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/android/">Android</a>
+          <a href="/tags/open-gles/">Open GLES</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/kotlin_coroutine_in_action/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Kotlin Coroutine in Action</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/another_one/">
+            <span class="next-text nav-default">再立一个flag</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

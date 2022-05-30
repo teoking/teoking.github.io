@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Canvas API Demo及性能优化 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="本片文章通过两个例子来看一下Canvas API的用法，以及如何通过HWUI Trace和Profiler测试性能并进行优化。 示例一：手指涂鸦 doodle" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/learn_android_canvas_by_samples/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Canvas API Demo及性能优化" />
+<meta property="og:description" content="本片文章通过两个例子来看一下Canvas API的用法，以及如何通过HWUI Trace和Profiler测试性能并进行优化。 示例一：手指涂鸦 doodle" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/learn_android_canvas_by_samples/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-06-08T20:42:07+08:00" />
+<meta property="article:modified_time" content="2021-06-08T20:42:07+08:00" />
+
+<meta itemprop="name" content="Canvas API Demo及性能优化">
+<meta itemprop="description" content="本片文章通过两个例子来看一下Canvas API的用法，以及如何通过HWUI Trace和Profiler测试性能并进行优化。 示例一：手指涂鸦 doodle"><meta itemprop="datePublished" content="2021-06-08T20:42:07+08:00" />
+<meta itemprop="dateModified" content="2021-06-08T20:42:07+08:00" />
+<meta itemprop="wordCount" content="3268">
+<meta itemprop="keywords" content="Android,Canvas," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Canvas API Demo及性能优化"/>
+<meta name="twitter:description" content="本片文章通过两个例子来看一下Canvas API的用法，以及如何通过HWUI Trace和Profiler测试性能并进行优化。 示例一：手指涂鸦 doodle"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Canvas API Demo及性能优化</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-06-08 </span>
+        <div class="post-category">
+            <a href="/categories/ui/"> UI </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#示例一手指涂鸦">示例一：手指涂鸦</a>
+      <ul>
+        <li><a href="#实现">实现</a></li>
+        <li><a href="#性能">性能</a></li>
+      </ul>
+    </li>
+    <li><a href="#示例二音乐频谱图">示例二：音乐频谱图</a>
+      <ul>
+        <li><a href="#实现-1">实现</a></li>
+        <li><a href="#性能-1">性能</a>
+          <ul>
+            <li><a href="#优化一避免创建float-array">优化一：避免创建float array</a></li>
+            <li><a href="#优化二缓存计算结果">优化二：缓存计算结果</a></li>
+            <li><a href="#更进一步的优化">更进一步的优化</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#referrence">Referrence</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>本片文章通过两个例子来看一下Canvas API的用法，以及如何通过<code>HWUI Trace</code>和<code>Profiler</code>测试性能并进行优化。</p>
+<h1 id="示例一手指涂鸦">示例一：手指涂鸦</h1>
+<img src="./doodle_view.png" alt="doodle_view" style="zoom:50%;" />
+<p>doodle view功能很简单，手指在屏幕上作画。</p>
+<h2 id="实现">实现</h2>
+<p>代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// A doodle based on a path.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">class</span> <span class="nc">DoodleItem</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Doodle Line Color
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">var</span> <span class="py">color</span> <span class="p">=</span> <span class="n">Color</span><span class="p">.</span><span class="n">RED</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Doodle Line Width
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">var</span> <span class="py">width</span> <span class="p">=</span> <span class="m">12.0f</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Doodle points list
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">val</span> <span class="py">pointList</span> <span class="p">=</span> <span class="n">ArrayList</span><span class="p">&lt;</span><span class="n">PointF</span><span class="p">&gt;()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Path created from points
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">private</span> <span class="k">val</span> <span class="py">path</span> <span class="p">=</span> <span class="n">Path</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">lateinit</span> <span class="k">var</span> <span class="py">lastPoint</span><span class="p">:</span> <span class="n">PointF</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Add doodle point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">fun</span> <span class="nf">addPoint</span><span class="p">(</span><span class="n">point</span><span class="p">:</span> <span class="n">PointF</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">pointList</span><span class="p">.</span><span class="n">size</span> <span class="o">==</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">lastPoint</span> <span class="p">=</span> <span class="n">point</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// First point. Move the the start.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">path</span><span class="p">.</span><span class="n">moveTo</span><span class="p">(</span><span class="n">lastPoint</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">lastPoint</span><span class="p">.</span><span class="n">y</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">pointList</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">dx</span><span class="p">:</span> <span class="n">Float</span> <span class="p">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">point</span><span class="p">.</span><span class="n">x</span> <span class="p">-</span> <span class="n">lastPoint</span><span class="p">.</span><span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">dy</span><span class="p">:</span> <span class="n">Float</span> <span class="p">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">point</span><span class="p">.</span><span class="n">y</span> <span class="p">-</span> <span class="n">lastPoint</span><span class="p">.</span><span class="n">y</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">dx</span> <span class="p">&gt;</span> <span class="m">0</span> <span class="o">||</span> <span class="n">dy</span> <span class="p">&gt;</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// Add a quadratic bezier:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// lastPoint as is curve control point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// current point as is curve end point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">path</span><span class="p">.</span><span class="n">quadTo</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">lastPoint</span><span class="p">.</span><span class="n">x</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">lastPoint</span><span class="p">.</span><span class="n">y</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">point</span><span class="p">.</span><span class="n">x</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">point</span><span class="p">.</span><span class="n">y</span>
+</span></span><span class="line"><span class="cl">                <span class="p">)</span> <span class="c1">// 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">pointList</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">lastPoint</span> <span class="p">=</span> <span class="n">point</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">fun</span> <span class="nf">draw</span><span class="p">(</span><span class="n">canvas</span><span class="p">:</span> <span class="n">Canvas</span><span class="p">,</span> <span class="n">paint</span><span class="p">:</span> <span class="n">Paint</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">pointList</span><span class="p">.</span><span class="n">size</span> <span class="p">&gt;</span> <span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">firstPoint</span><span class="p">:</span> <span class="n">PointF</span> <span class="p">=</span> <span class="n">pointList</span><span class="p">[</span><span class="m">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="n">paint</span><span class="p">.</span><span class="n">style</span> <span class="p">=</span> <span class="n">Paint</span><span class="p">.</span><span class="n">Style</span><span class="p">.</span><span class="n">FILL</span>
+</span></span><span class="line"><span class="cl">            <span class="n">paint</span><span class="p">.</span><span class="n">color</span> <span class="p">=</span> <span class="n">color</span>
+</span></span><span class="line"><span class="cl">            <span class="n">canvas</span><span class="p">.</span><span class="n">drawCircle</span><span class="p">(</span><span class="n">firstPoint</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">firstPoint</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">width</span> <span class="p">/</span> <span class="m">2.0f</span><span class="p">,</span> <span class="n">paint</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">lastPointA</span><span class="p">:</span> <span class="n">PointF</span> <span class="p">=</span> <span class="n">pointList</span><span class="p">[</span><span class="n">pointList</span><span class="p">.</span><span class="n">size</span> <span class="p">-</span> <span class="m">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="k">val</span> <span class="py">lastPointB</span><span class="p">:</span> <span class="n">PointF</span> <span class="p">=</span> <span class="n">pointList</span><span class="p">[</span><span class="n">pointList</span><span class="p">.</span><span class="n">size</span> <span class="p">-</span> <span class="m">2</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// Draw start point as a circle
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">canvas</span><span class="p">.</span><span class="n">drawCircle</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="p">(</span><span class="n">lastPointA</span><span class="p">.</span><span class="n">x</span> <span class="p">+</span> <span class="n">lastPointB</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="p">/</span> <span class="m">2.0f</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="p">(</span><span class="n">lastPointA</span><span class="p">.</span><span class="n">y</span> <span class="p">+</span> <span class="n">lastPointB</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="p">/</span> <span class="m">2.0f</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">width</span> <span class="p">/</span> <span class="m">2.0f</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">paint</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">paint</span><span class="p">.</span><span class="n">strokeWidth</span> <span class="p">=</span> <span class="n">width</span>
+</span></span><span class="line"><span class="cl">            <span class="n">paint</span><span class="p">.</span><span class="n">style</span> <span class="p">=</span> <span class="n">Paint</span><span class="p">.</span><span class="n">Style</span><span class="p">.</span><span class="n">STROKE</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// Draw the path from points
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">canvas</span><span class="p">.</span><span class="n">drawPath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">paint</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">pointList</span><span class="p">.</span><span class="n">size</span> <span class="o">==</span> <span class="m">1</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// Draw only one point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">val</span> <span class="py">firstPoint</span><span class="p">:</span> <span class="n">PointF</span> <span class="p">=</span> <span class="n">pointList</span><span class="p">[</span><span class="m">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="n">paint</span><span class="p">.</span><span class="n">style</span> <span class="p">=</span> <span class="n">Paint</span><span class="p">.</span><span class="n">Style</span><span class="p">.</span><span class="n">FILL</span>
+</span></span><span class="line"><span class="cl">            <span class="n">paint</span><span class="p">.</span><span class="n">color</span> <span class="p">=</span> <span class="n">color</span>
+</span></span><span class="line"><span class="cl">            <span class="n">canvas</span><span class="p">.</span><span class="n">drawCircle</span><span class="p">(</span><span class="n">firstPoint</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">firstPoint</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">width</span> <span class="p">/</span> <span class="m">2.0f</span><span class="p">,</span> <span class="n">paint</span><span class="p">)</span> <span class="c1">//2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">paint</span><span class="p">.</span><span class="n">strokeWidth</span> <span class="p">=</span> <span class="n">width</span>
+</span></span><span class="line"><span class="cl">            <span class="n">paint</span><span class="p">.</span><span class="n">style</span> <span class="p">=</span> <span class="n">Paint</span><span class="p">.</span><span class="n">Style</span><span class="p">.</span><span class="n">STROKE</span>
+</span></span><span class="line"><span class="cl">            <span class="n">canvas</span><span class="p">.</span><span class="n">drawPath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">paint</span><span class="p">)</span> <span class="c1">//3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里面关键的实现是：</p>
+<ol>
+<li>将一个位置转换为二次贝塞尔曲线中的点，添加到path中</li>
+<li>用<code>drawCircle</code>绘制第一个点</li>
+<li>将path绘制到canvas上</li>
+</ol>
+<p>接着我们看一下如何使用<code>DoodleItem</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">DoodleView</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="n">attrs</span><span class="p">:</span> <span class="n">AttributeSet</span><span class="p">)</span> <span class="p">:</span> <span class="n">View</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// A doodle&#39;s cycle via MotionEvent:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 1. Start on down event, add first point
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 2. Add points on move event continually
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 3. End on up/cancel event, save it to doodle list
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onTouchEvent</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">MotionEvent</span><span class="p">):</span> <span class="n">Boolean</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">x</span> <span class="p">=</span> <span class="n">event</span><span class="p">.</span><span class="n">x</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">y</span> <span class="p">=</span> <span class="n">event</span><span class="p">.</span><span class="n">y</span>
+</span></span><span class="line"><span class="cl">        <span class="k">when</span> <span class="p">(</span><span class="n">event</span><span class="p">.</span><span class="n">action</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">MotionEvent</span><span class="p">.</span><span class="n">ACTION_DOWN</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="c1">//1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// New doodle here.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">currentDoodle</span> <span class="p">=</span> <span class="n">DoodleItem</span><span class="p">().</span><span class="n">also</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">it</span><span class="p">.</span><span class="n">width</span> <span class="p">=</span> <span class="n">lineWidth</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">it</span><span class="p">.</span><span class="n">color</span> <span class="p">=</span> <span class="n">lineColor</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">it</span><span class="p">.</span><span class="n">addPoint</span><span class="p">(</span><span class="n">PointF</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="k">true</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="n">MotionEvent</span><span class="p">.</span><span class="n">ACTION_MOVE</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="c1">//2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">currentDoodle</span><span class="o">?.</span><span class="n">addPoint</span><span class="p">(</span><span class="n">PointF</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">                <span class="n">invalidate</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="k">true</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="n">MotionEvent</span><span class="p">.</span><span class="n">ACTION_UP</span><span class="p">,</span> <span class="n">MotionEvent</span><span class="p">.</span><span class="n">ACTION_CANCEL</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="c1">//3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">currentDoodle</span><span class="o">?.</span><span class="n">let</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="p">(</span><span class="k">it</span><span class="p">.</span><span class="n">pointList</span><span class="p">.</span><span class="n">size</span> <span class="p">&gt;</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">if</span> <span class="p">(</span><span class="k">it</span><span class="p">.</span><span class="n">pointList</span><span class="p">.</span><span class="n">size</span> <span class="o">==</span> <span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                            <span class="k">super</span><span class="p">.</span><span class="n">performClick</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">it</span><span class="p">.</span><span class="n">addPoint</span><span class="p">(</span><span class="n">PointF</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">                        <span class="c1">// Ends the doodle, save it to doodleList.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">doodleList</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="k">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">currentDoodle</span> <span class="p">=</span> <span class="k">null</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">invalidate</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="k">true</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">super</span><span class="p">.</span><span class="n">onTouchEvent</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onDraw</span><span class="p">(</span><span class="n">canvas</span><span class="p">:</span> <span class="n">Canvas</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="k">in</span> <span class="n">doodleList</span><span class="p">.</span><span class="n">indices</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">doodleList</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">draw</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">paint</span><span class="p">)</span> <span class="c1">//4
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">currentDoodle</span><span class="o">?.</span><span class="n">draw</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">paint</span><span class="p">)</span> <span class="c1">//5
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>代码释义：</p>
+<ol>
+<li>处理onTouchEvent，在down事件时，创建一个DoodleItem实例，并添加第一个点；此时不需要invalidate</li>
+<li>处理move事件，每一个move事件都会添加一个点到DoodleItem；此时需要invalidate</li>
+<li>当手指抬起时（up/cancel事件），结束一个DoodleItem周期，并记录最后一个点，同时将其保存至doodleList；最后invalidate，请求view更新</li>
+<li>绘制doodleList中每一个item</li>
+<li>绘制当前item</li>
+</ol>
+<h2 id="性能">性能</h2>
+<p>通常情况下，上述实现是没有任何性能问题的。但当path中的点不断增多时，性能会持续下降，最终出现严重掉帧。</p>
+<p><img src="./complex_path_draw_lantency.png" alt="Complex trace draw lantency"></p>
+<p>从上图可以看出，不间断的绘制，导致path中的点很多时，绘制耗时已经非常明显了。</p>
+<p><img src="./complex_path_draw_lantency_trace.png" alt="Complex path draw trace"></p>
+<p>可以通过profiler看到，其中每一次draw call平均耗时已达到27.03ms，最大则到了40.22ms。而且随着点不断增加，这个耗时还会持续增长。</p>
+<p>这一点在<a href="https://teoking.github.io/post/android_vectordrawable_guides_notes/">vector drawable这篇文章</a>中有所提及：</p>
+<blockquote>
+<ul>
+<li>推荐尺寸小于200 * 200 dp，path char数量小于800（Android Lint中包含了对path char超过800的警告规则）</li>
+</ul>
+</blockquote>
+<p>此外在<a href="https://developer.android.com/topic/performance/vitals/render#rendering_performance_renderthread">Slow Rendering</a>指南中，也提到这一点：</p>
+<blockquote>
+<p>When <code>Canvas.drawPath()</code> is called on the hardware accelerated Canvas passed to Views, Android draws these paths first on CPU, and uploads them to the GPU. If you have large paths, avoid editing them from frame to frame, so they can be cached and drawn efficiently. <code>drawPoints()</code>, <code>drawLines()</code>, and <code>drawRect/Circle/Oval/RoundRect()</code> are more efficient – it&rsquo;s better to use them even if you end up using more draw calls.</p>
+</blockquote>
+<p>drawPath要先经过CPU，因此path太大，cpu这边处理耗时，将导致卡顿。</p>
+<p><strong>从技术角度看，如果要优化这个问题，就需要从如何缓存已绘制结果入手</strong>，比如给path预先设置点上限，当它中的绘制点超过该阈值，则开始一个新的path来绘制新的点；但从实践角度，还要结合具体产品需求来决定如何优化，因为一般情况下用户不太会用手指在手机屏幕上连续绘制这么多点。</p>
+<h1 id="示例二音乐频谱图">示例二：音乐频谱图</h1>
+<p><img src="./spectrogram.png" alt="spectrogram"></p>
+<p>这个例子是跟随音乐播放，绘制其频谱图。</p>
+<h2 id="实现-1">实现</h2>
+<p>实现步骤如下：</p>
+<ol>
+<li>通过MediaPlayer音乐</li>
+<li>创建Visualizer，来获取audio data和fft data(都是byte数组)</li>
+<li>然后根据audio data来绘制圆形频谱，用fft data绘制圆形条状图谱</li>
+</ol>
+<p>以CircleRender为例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">CircleRender</span><span class="p">(</span><span class="k">private</span> <span class="k">val</span> <span class="py">mPaint</span><span class="p">:</span> <span class="n">Paint</span><span class="p">,</span> <span class="k">private</span> <span class="k">val</span> <span class="py">mCycleColor</span><span class="p">:</span> <span class="n">Boolean</span><span class="p">)</span> <span class="p">:</span> <span class="n">Renderer</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">modulation</span> <span class="p">=</span> <span class="m">0f</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">aggressive</span> <span class="p">=</span> <span class="m">0.33f</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onRender</span><span class="p">(</span><span class="n">canvas</span><span class="p">:</span> <span class="n">Canvas</span><span class="p">,</span> <span class="k">data</span><span class="p">:</span> <span class="n">ByteArray</span><span class="p">,</span> <span class="n">rect</span><span class="p">:</span> <span class="n">Rect</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">mCycleColor</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cycleColor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">mPoints</span><span class="o">?.</span><span class="n">let</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="k">in</span> <span class="m">0</span> <span class="n">until</span> <span class="k">data</span><span class="p">.</span><span class="n">size</span> <span class="p">-</span> <span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">val</span> <span class="py">cartPoint</span> <span class="p">=</span> <span class="n">floatArrayOf</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">i</span><span class="p">.</span><span class="n">toFloat</span><span class="p">()</span> <span class="p">/</span> <span class="p">(</span><span class="k">data</span><span class="p">.</span><span class="n">size</span> <span class="p">-</span> <span class="m">1</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span> <span class="p">+</span> <span class="p">(</span><span class="k">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">+</span> <span class="m">128</span><span class="p">).</span><span class="n">toByte</span><span class="p">()</span> <span class="p">*</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span><span class="p">)</span> <span class="p">/</span> <span class="m">128</span><span class="p">).</span><span class="n">toFloat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">val</span> <span class="py">polarPoint</span><span class="p">:</span> <span class="n">FloatArray</span> <span class="p">=</span> <span class="n">toPolar</span><span class="p">(</span><span class="n">cartPoint</span><span class="p">,</span> <span class="n">rect</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// x1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">it</span><span class="p">[</span><span class="n">i</span> <span class="p">*</span> <span class="m">4</span><span class="p">]</span> <span class="p">=</span> <span class="n">polarPoint</span><span class="p">[</span><span class="m">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// y1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">it</span><span class="p">[</span><span class="n">i</span> <span class="p">*</span> <span class="m">4</span> <span class="p">+</span> <span class="m">1</span><span class="p">]</span> <span class="p">=</span> <span class="n">polarPoint</span><span class="p">[</span><span class="m">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">                <span class="k">val</span> <span class="py">cartPoint2</span> <span class="p">=</span> <span class="n">floatArrayOf</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">(</span><span class="n">i</span> <span class="p">+</span> <span class="m">1</span><span class="p">).</span><span class="n">toFloat</span><span class="p">()</span> <span class="p">/</span> <span class="p">(</span><span class="k">data</span><span class="p">.</span><span class="n">size</span> <span class="p">-</span> <span class="m">1</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span> <span class="p">+</span> <span class="p">(</span><span class="k">data</span><span class="p">[</span><span class="n">i</span> <span class="p">+</span> <span class="m">1</span><span class="p">]</span> <span class="p">+</span> <span class="m">128</span><span class="p">).</span><span class="n">toByte</span><span class="p">()</span> <span class="p">*</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span><span class="p">)</span> <span class="p">/</span> <span class="m">128</span><span class="p">).</span><span class="n">toFloat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">val</span> <span class="py">polarPoint2</span><span class="p">:</span> <span class="n">FloatArray</span> <span class="p">=</span> <span class="n">toPolar</span><span class="p">(</span><span class="n">cartPoint2</span><span class="p">,</span> <span class="n">rect</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// x2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">it</span><span class="p">[</span><span class="n">i</span> <span class="p">*</span> <span class="m">4</span> <span class="p">+</span> <span class="m">2</span><span class="p">]</span> <span class="p">=</span> <span class="n">polarPoint2</span><span class="p">[</span><span class="m">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// y2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">it</span><span class="p">[</span><span class="n">i</span> <span class="p">*</span> <span class="m">4</span> <span class="p">+</span> <span class="m">3</span><span class="p">]</span> <span class="p">=</span> <span class="n">polarPoint2</span><span class="p">[</span><span class="m">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">canvas</span><span class="p">.</span><span class="n">drawLines</span><span class="p">(</span><span class="k">it</span><span class="p">,</span> <span class="n">mPaint</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// Controls the pulsing rate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">modulation</span> <span class="o">+=</span> <span class="m">0.04f</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">fun</span> <span class="nf">toPolar</span><span class="p">(</span><span class="n">cartesian</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">rect</span><span class="p">:</span> <span class="n">Rect</span><span class="p">):</span> <span class="n">FloatArray</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">cX</span> <span class="p">=</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">width</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span><span class="p">).</span><span class="n">toDouble</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">cY</span> <span class="p">=</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span><span class="p">).</span><span class="n">toDouble</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">angle</span> <span class="p">=</span> <span class="n">cartesian</span><span class="p">[</span><span class="m">0</span><span class="p">]</span> <span class="p">*</span> <span class="m">2</span> <span class="p">*</span> <span class="n">Math</span><span class="p">.</span><span class="n">PI</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">radius</span> <span class="p">=</span>
+</span></span><span class="line"><span class="cl">            <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">width</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span> <span class="p">*</span> <span class="p">(</span><span class="m">1</span> <span class="p">-</span> <span class="n">aggressive</span><span class="p">)</span> <span class="p">+</span> <span class="n">aggressive</span> <span class="p">*</span> <span class="n">cartesian</span><span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="p">/</span> <span class="m">2</span><span class="p">)</span> <span class="p">*</span> <span class="p">(</span><span class="m">1.2</span> <span class="p">+</span> <span class="n">sin</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">modulation</span><span class="p">.</span><span class="n">toDouble</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="p">))</span> <span class="p">/</span> <span class="m">2.2</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">floatArrayOf</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="p">(</span><span class="n">cX</span> <span class="p">+</span> <span class="n">radius</span> <span class="p">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)).</span><span class="n">toFloat</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="p">(</span><span class="n">cY</span> <span class="p">+</span> <span class="n">radius</span> <span class="p">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)).</span><span class="n">toFloat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从上述代码可以看出，audio data的render的是将audio data转换为曲面上的线段点（存储在<code>mPoints</code>中），最后这些点组合起来绘制出一个圆形频谱。</p>
+<p>其余实现代码见代码仓库。</p>
+<h2 id="性能-1">性能</h2>
+<p>上述实现其实是有性能问题的。用HWUI trace就可以直观的看到。</p>
+<p><img src="./spectrogram_hw_trace.png" alt="spectrogram hwui trace"></p>
+<p>然后用profiler看一下到底耗时在哪里</p>
+<p><img src="./profiler_circlerenderer_onrenderer_costly.png" alt="CircleRender costly"></p>
+<p>onRender这里有明显的性能问题，大部分的wall duration都超过了17ms，而我们知道整个渲染管线规定耗时才16ms，这一步就耗时这么多，丢帧是很明显了。</p>
+<h3 id="优化一避免创建float-array">优化一：避免创建float array</h3>
+<p><img src="./profiler_toPolar.png" alt="ToPolar function"></p>
+<p>由于每次收到数据，CircleRenderer要计算128个点，每一个点计算要进行如下操作：</p>
+<ul>
+<li>两次floatArrayOf调用</li>
+<li>两次toPolar调用
+<ul>
+<li>每个toPolar还会调用一次floatArrayOf</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># floatArrayOf
+</span></span><span class="line"><span class="cl">    LINENUMBER 136 L12
+</span></span><span class="line"><span class="cl">    ICONST_2
+</span></span><span class="line"><span class="cl">    NEWARRAY T_FLOAT
+</span></span><span class="line"><span class="cl">    DUP
+</span></span><span class="line"><span class="cl">   L13
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>通过查看floatArrayOf对应的kotlin bytecode，会发现它会创建一个新的float型数组。</p>
+<p>优化的第一步是避免在renderer中频繁创建float array。代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">CircleRender</span><span class="p">(</span><span class="k">private</span> <span class="k">val</span> <span class="py">mPaint</span><span class="p">:</span> <span class="n">Paint</span><span class="p">,</span> <span class="k">private</span> <span class="k">val</span> <span class="py">mCycleColor</span><span class="p">:</span> <span class="n">Boolean</span><span class="p">)</span> <span class="p">:</span> <span class="n">Renderer</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">modulation</span> <span class="p">=</span> <span class="m">0f</span>
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">var</span> <span class="py">aggressive</span> <span class="p">=</span> <span class="m">0.33f</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  	<span class="c1">// points数组，用以计算线的起始点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">private</span> <span class="k">val</span> <span class="py">points</span> <span class="p">=</span> <span class="n">FloatArray</span><span class="p">(</span><span class="m">8</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onRender</span><span class="p">(</span><span class="n">canvas</span><span class="p">:</span> <span class="n">Canvas</span><span class="p">,</span> <span class="k">data</span><span class="p">:</span> <span class="n">ByteArray</span><span class="p">,</span> <span class="n">rect</span><span class="p">:</span> <span class="n">Rect</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">mCycleColor</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cycleColor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">mPoints</span><span class="o">?.</span><span class="n">let</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="k">in</span> <span class="m">0</span> <span class="n">until</span> <span class="k">data</span><span class="p">.</span><span class="n">size</span> <span class="p">-</span> <span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">points</span><span class="p">[</span><span class="m">0</span><span class="p">]</span> <span class="p">=</span> <span class="n">i</span><span class="p">.</span><span class="n">toFloat</span><span class="p">()</span> <span class="p">/</span> <span class="p">(</span><span class="k">data</span><span class="p">.</span><span class="n">size</span> <span class="p">-</span> <span class="m">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">points</span><span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="p">=</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span> <span class="p">+</span> <span class="p">(</span><span class="k">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">+</span> <span class="m">128</span><span class="p">).</span><span class="n">toByte</span><span class="p">()</span> <span class="p">*</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span><span class="p">)</span> <span class="p">/</span> <span class="m">128</span><span class="p">).</span><span class="n">toFloat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="n">toPolar</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// x1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">it</span><span class="p">[</span><span class="n">i</span> <span class="p">*</span> <span class="m">4</span><span class="p">]</span> <span class="p">=</span> <span class="n">points</span><span class="p">[</span><span class="m">2</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// y1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">it</span><span class="p">[</span><span class="n">i</span> <span class="p">*</span> <span class="m">4</span> <span class="p">+</span> <span class="m">1</span><span class="p">]</span> <span class="p">=</span> <span class="n">points</span><span class="p">[</span><span class="m">3</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">                <span class="n">points</span><span class="p">[</span><span class="m">4</span><span class="p">]</span> <span class="p">=</span> <span class="p">(</span><span class="n">i</span> <span class="p">+</span> <span class="m">1</span><span class="p">).</span><span class="n">toFloat</span><span class="p">()</span> <span class="p">/</span> <span class="p">(</span><span class="k">data</span><span class="p">.</span><span class="n">size</span> <span class="p">-</span> <span class="m">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">points</span><span class="p">[</span><span class="m">5</span><span class="p">]</span> <span class="p">=</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span> <span class="p">+</span> <span class="p">(</span><span class="k">data</span><span class="p">[</span><span class="n">i</span> <span class="p">+</span> <span class="m">1</span><span class="p">]</span> <span class="p">+</span> <span class="m">128</span><span class="p">).</span><span class="n">toByte</span><span class="p">()</span> <span class="p">*</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span><span class="p">)</span> <span class="p">/</span> <span class="m">128</span><span class="p">).</span><span class="n">toFloat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="n">toPolar</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="m">4</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// x2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">it</span><span class="p">[</span><span class="n">i</span> <span class="p">*</span> <span class="m">4</span> <span class="p">+</span> <span class="m">2</span><span class="p">]</span> <span class="p">=</span> <span class="n">points</span><span class="p">[</span><span class="m">6</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// y2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">it</span><span class="p">[</span><span class="n">i</span> <span class="p">*</span> <span class="m">4</span> <span class="p">+</span> <span class="m">3</span><span class="p">]</span> <span class="p">=</span> <span class="n">points</span><span class="p">[</span><span class="m">7</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="n">canvas</span><span class="p">.</span><span class="n">drawLines</span><span class="p">(</span><span class="k">it</span><span class="p">,</span> <span class="n">mPaint</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// Controls the pulsing rate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">modulation</span> <span class="o">+=</span> <span class="m">0.04f</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">private</span> <span class="k">fun</span> <span class="nf">toPolar</span><span class="p">(</span><span class="n">cartesian</span><span class="p">:</span> <span class="n">FloatArray</span><span class="p">,</span> <span class="n">rect</span><span class="p">:</span> <span class="n">Rect</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Int</span><span class="p">):</span> <span class="n">FloatArray</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">cX</span> <span class="p">=</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">width</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span><span class="p">).</span><span class="n">toDouble</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">cY</span> <span class="p">=</span> <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span><span class="p">).</span><span class="n">toDouble</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">angle</span> <span class="p">=</span> <span class="n">cartesian</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">*</span> <span class="m">2</span> <span class="p">*</span> <span class="n">Math</span><span class="p">.</span><span class="n">PI</span>
+</span></span><span class="line"><span class="cl">        <span class="k">val</span> <span class="py">radius</span> <span class="p">=</span>
+</span></span><span class="line"><span class="cl">            <span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">width</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span> <span class="p">*</span> <span class="p">(</span><span class="m">1</span> <span class="p">-</span> <span class="n">aggressive</span><span class="p">)</span> <span class="p">+</span> <span class="n">aggressive</span> <span class="p">*</span> <span class="n">cartesian</span><span class="p">[</span><span class="n">start</span><span class="p">+</span><span class="m">1</span><span class="p">]</span> <span class="p">/</span> <span class="m">2</span><span class="p">)</span> <span class="p">*</span> <span class="p">(</span><span class="m">1.2</span> <span class="p">+</span> <span class="n">sin</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">modulation</span><span class="p">.</span><span class="n">toDouble</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="p">))</span> <span class="p">/</span> <span class="m">2.2</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cartesian</span><span class="p">[</span><span class="n">start</span><span class="p">+</span><span class="m">2</span><span class="p">]</span> <span class="p">=</span> <span class="p">(</span><span class="n">cX</span> <span class="p">+</span> <span class="n">radius</span> <span class="p">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)).</span><span class="n">toFloat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cartesian</span><span class="p">[</span><span class="n">start</span><span class="p">+</span><span class="m">3</span><span class="p">]</span> <span class="p">=</span> <span class="p">(</span><span class="n">cY</span> <span class="p">+</span> <span class="n">radius</span> <span class="p">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)).</span><span class="n">toFloat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">cartesian</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>再看一下profiler结果：</p>
+<p><img src="./profiler_circlerender_opt1_noalloc.png" alt="Optimize no alloc"></p>
+<p>可以看出，还是有优化效果的。<strong>avg从14.39ms降低到12.12ms，max从24.08下降到18.85ms。</strong></p>
+<h3 id="优化二缓存计算结果">优化二：缓存计算结果</h3>
+<p><img src="./profiler_rect_height_costly.png" alt="Rect.height() costly"></p>
+<p>继续分析trace，发现onRender和toPolar中都会去调用rect.height()或rect.width()。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// Rect.java
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">final</span> <span class="kt">int</span> <span class="nf">width</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">right</span> <span class="o">-</span> <span class="n">left</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">final</span> <span class="kt">int</span> <span class="nf">height</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">bottom</span> <span class="o">-</span> <span class="n">top</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这两个方法虽然只是做简单减法，但是因为调用次数极多，同样存在性能损耗。所以这一步优化，我们将对rect宽高的访问缓存起来。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="c1">// 后续使用这两个计算好的局部变量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">val</span> <span class="py">rhh</span> <span class="p">=</span> <span class="n">rect</span><span class="p">.</span><span class="n">width</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span>
+</span></span><span class="line"><span class="cl"><span class="k">val</span> <span class="py">rwh</span> <span class="p">=</span> <span class="n">rect</span><span class="p">.</span><span class="n">height</span><span class="p">()</span> <span class="p">/</span> <span class="m">2</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>直接看优化结果：</p>
+<p><img src="./profiler_circlerenderer_opt2_cache_calculation.png" alt="Opt2 caching calculations"></p>
+<p><strong>avg从12.12ms降低到8.06ms，max从18.85ms下降到10.85ms。</strong></p>
+<h3 id="更进一步的优化">更进一步的优化</h3>
+<p>优化到这里可以看出，针对代码实现的优化已经比较难将性能提升到理想范围内（比如大多数绘制能在2ms~4ms以内完成绘制，以保证帧能在16ms完成）。更进一步的优化就需要考虑设计层面的优化。比如：</p>
+<ul>
+<li>收到audio data和fft data不要进行立即绘制，而是放在子线程队列中进行预绘制，再将绘制好后的bitmap直接更新到前台界面（类似双缓冲技术）</li>
+<li>合并绘制请求。当队列中相邻或相近的数据很相似时，就可以将他们合并</li>
+<li>对频谱的绘制帧率进行控制。不一定频谱界面就要保持60帧的更新频率，可以降低到可接受的帧率（比如30~40帧）</li>
+</ul>
+<h1 id="referrence">Referrence</h1>
+<ol>
+<li><a href="https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.newarray">JVM newarray</a></li>
+<li><a href="https://developer.android.com/topic/performance/rendering/inspect-gpu-rendering?hl=zh-cn">检查 GPU 渲染速度和过度绘制</a></li>
+<li><a href="https://developer.android.com/studio/profile/cpu-profiler">使用 CPU 性能剖析器检查 CPU 活动</a></li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-06-08
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/android/">Android</a>
+          <a href="/tags/canvas/">Canvas</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/dp_principle_theory_and_actions/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">设计模式之美笔记二：设计原则</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/dp_oo_theory_and_actions/">
+            <span class="next-text nav-default">设计模式之美笔记一：面向对象理论与实战</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

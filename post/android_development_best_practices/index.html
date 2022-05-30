@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Android Development最佳实践 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="原文：Android Development | Best Practices 仅仅写代码是不够的，要高效地写代码。 下面是作者总结的Android开发最佳实践。 Tips and not Tricks 1) Choose your App Architecture wisely based on your need, not just" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/android_development_best_practices/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Android Development最佳实践" />
+<meta property="og:description" content="原文：Android Development | Best Practices 仅仅写代码是不够的，要高效地写代码。 下面是作者总结的Android开发最佳实践。 Tips and not Tricks 1) Choose your App Architecture wisely based on your need, not just" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/android_development_best_practices/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-06T19:08:37+08:00" />
+<meta property="article:modified_time" content="2021-05-06T19:08:37+08:00" />
+
+<meta itemprop="name" content="Android Development最佳实践">
+<meta itemprop="description" content="原文：Android Development | Best Practices 仅仅写代码是不够的，要高效地写代码。 下面是作者总结的Android开发最佳实践。 Tips and not Tricks 1) Choose your App Architecture wisely based on your need, not just"><meta itemprop="datePublished" content="2021-05-06T19:08:37+08:00" />
+<meta itemprop="dateModified" content="2021-05-06T19:08:37+08:00" />
+<meta itemprop="wordCount" content="1742">
+<meta itemprop="keywords" content="Android," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Android Development最佳实践"/>
+<meta name="twitter:description" content="原文：Android Development | Best Practices 仅仅写代码是不够的，要高效地写代码。 下面是作者总结的Android开发最佳实践。 Tips and not Tricks 1) Choose your App Architecture wisely based on your need, not just"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Android Development最佳实践</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-06 </span>
+        <div class="post-category">
+            <a href="/categories/bestpractices/"> BestPractices </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#tips-and-not-tricks">Tips and not Tricks</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>原文：<a href="https://proandroiddev.com/android-development-best-practices-7278e9cdbbe9">Android Development | Best Practices</a></p>
+<p>仅仅写代码是不够的，要高效地写代码。</p>
+<p>下面是作者总结的Android开发最佳实践。</p>
+<h1 id="tips-and-not-tricks">Tips and not Tricks</h1>
+<p><strong>1) Choose your App Architecture wisely based on your need, not just what the trend is.</strong></p>
+<p>MVC, MVP, MVVM, MVI, Clean Architecture，选择适合自己项目的模式。没有坏模式，只有用错处。</p>
+<p>适用于iOS开发。</p>
+<p><strong>2) Consider using SVGs or WebPs for your image drawables</strong></p>
+<p>使用SVG或WebP来解决图片尺寸变化时的失真问题。</p>
+<p>适用于iOS开发。</p>
+<p><strong>3) Choose your layout wisely and separate out the reusable XML and add it using <include> tag.</strong></p>
+<p>剥离可复用的xml，再使用include复用</p>
+<p>iOS开发中也类似。不过不清楚用story board时如何复用。</p>
+<p><strong>4) Learn how to use Build types, Product Flavors and Build Variants and make most out of it for faster and easier development.</strong></p>
+<p>一个app做久了，很自然的衍生出多包需求。用好Build Type、Product Flavors和Build Variants就可以实现这类需求：一条代码分支可以出多个包。</p>
+<p>当然这里会有一些技术性要求：越底层的模块越要保持边界清晰。当一个被多个module依赖的底层module启用了flavor，那么这些module都需要添加对应的flavor。尽量保持模块功能设计合理，不要出现这种情况。</p>
+<p><strong>5) Learn &amp; Use Android Debug Bridge (ADB) to debug your application.</strong></p>
+<p>ADB命令很强大，不在shell中使用它的话，就很难体会到这种强大。</p>
+<p><strong>6) Configure your gradle.properties to increase your build speed.</strong></p>
+<p>配置编译参数加速编译。</p>
+<p><strong>7) Keep a check on structural problems in your App code through Lint.</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">./gradlew lint
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>被多数app开发者忽视！</p>
+<p><strong>8) Log everything in DEBUG mode only.</strong></p>
+<p>一种方案是使用Timber日志库或者自己实现Log框架，只在DEBUG模式下输出log。</p>
+<p>另外一种方案是使用混淆脚本过滤掉Log代码。</p>
+<p>个人比较建议方案一。因为开发人员清楚知道“输出了什么，做什么用”，才能避免过时、冗余、无意义的日志。尤其在复杂项目中，这一点尤为重要。但对于单个app项目，重要性就弱一些。</p>
+<p><strong>9) Never add whole third party library if it’s possible for you to extract specific methods or small no. of classes for your functionality.</strong></p>
+<p>如果仅适用一个三方库的部分功能，试着将这些部分代码加入到项目中，这可以避免将整个项目引入进来。</p>
+<p><strong>10) Detect and Fix memory leaks in Android App time to time</strong></p>
+<p>“A small leak will sink a great ship.” — Benjamin Franklin</p>
+<p>适用一些工具（如Leak canary）来监测内存泄露。</p>
+<p>Leak canary的大致原理：</p>
+<blockquote>
+<p>在Activity的&amp;onDestroy方法中，手动调用 GC，然后利用ReferenceQueue+WeakReference，来判断是否有释放不掉的引用，然后结合dump memory的hpof文件, 用对应的parser分析出泄漏地方</p>
+</blockquote>
+<p><strong>11) Handle Configuration changes for your App.</strong></p>
+<p>处理配置变化（如横竖屏切换、语言切换等）是比较麻烦的，很容易导致bug。但如何app有横竖屏场景，还是需要认真处理此类问题。</p>
+<p><strong>12) Perform validations in screens like input form on Client end only.</strong></p>
+<p>客户端将用户输入校验结果展现在屏幕上。（这是个用户体验tip）</p>
+<p><strong>13) Don’t create references to activities that will prevent them from being garbage collected when they are done.</strong></p>
+<p>不要胡乱引用activity。这会导致GC问题。常见的做法是，onStop时去掉不用的引用。</p>
+<p><strong>14) Use App Chooser for your implicit intents and always handle NoActivityFound Exception.</strong></p>
+<p>打开对外的intent时，要进行NoActivityFoundException检查。</p>
+<p><strong>15) Put all your sensitive information in gradle.properties and never push it to your version control system.</strong></p>
+<p>将敏感信息放在本地的gradle.properties，并且不要push到代码仓库中去。（然鹅很多公司的签名密钥人人可见）</p>
+<p><strong>16) Implement SSL certificate pinning to prevent Man-in-the-middle Attack (MITM)</strong></p>
+<p>SSL Pinning技术可以避免中间人攻击。</p>
+<p>实际中，经常会需要抓包，这时可以结合上面的build variants技术，仅允许debug版本抓包。</p>
+<p><strong>17) Use</strong> <a href="https://developer.android.com/training/safetynet/attestation">SafetyNet Attestation API </a><strong>to help determine whether your servers are interacting with your genuine app running on a genuine Android device.</strong></p>
+<p>使用SafeNet Attenstation API来校验所运行的设备环境。</p>
+<p><strong>18) Use EncryptedSharedPreferences instead of SharedPreferences for storing sensitive information like your auth tokens etc.</strong></p>
+<p>咦，这个还没有用过。mmkv貌似不能做这个事情。</p>
+<p><strong>19) Use the Android Keystore system to store and retrieve sensitive information from your storage like databases etc.</strong></p>
+<p>这一条依然是安全，保证本地数据库安全。</p>
+<p><strong>20) Call Google Play services methods to ensure that your app is running on a device that has the latest updates to protect against known vulnerabilities found in the default security provider.</strong></p>
+<p>依然是安全相关。通过GP接口检查设备是否更新到了最新的安全补丁。</p>
+<p><strong>21) Implement</strong> <a href="https://developer.android.com/training/safetynet/recaptcha">reCAPTCHA</a> <strong>to ensure your app is not automated i.e handled by a robot.</strong></p>
+<p>通过验证码机制避免app被自动化操作，比如外挂。</p>
+<p><strong>22) Write</strong> <a href="https://developer.android.com/training/testing/unit-testing">Unit tests</a> <strong>for your feature.</strong></p>
+<p>写单元测试。不过很多国内的项目团队不重视这个，宁可996解决重复的问题，也不远写单元测试来保证基本质量。</p>
+<p><strong>23) Make security decisions on the server-side whenever possible.</strong></p>
+<p>安全问题，尽可能地从server端来考虑。</p>
+<p><strong>24) Learn how to use</strong> <a href="https://developer.android.com/studio/build/shrink-code">Proguard</a> <strong>to the maximum for code Obfuscation and Optimization.</strong></p>
+<p>混淆和优化。</p>
+<p><strong>25) Use</strong> <a href="https://developer.android.com/training/articles/security-config">Network security configuration</a> <strong>to improve your app’s network security.</strong></p>
+<p>网络安全配置。Android 10强制要求该配置。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-06
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/android/">Android</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/ios_collectionviewcell_with_different_flowlayout/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">iOS - CollectionViewCell对应不同flow layout的实例</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/android_vectordrawable_guides_notes/">
+            <span class="next-text nav-default">Android VectorDrawable系列文章Review</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>AV on Teoking writes something.</title>
+    <link>https://teoking.github.io/categories/av/</link>
+    <description>Recent content in AV on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 04 Aug 2021 19:31:05 +0800</lastBuildDate><atom:link href="https://teoking.github.io/categories/av/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>libopenshot-Effect,KeyFrame和Transition</title>
+      <link>https://teoking.github.io/post/libopenshot/effect-transition/</link>
+      <pubDate>Wed, 04 Aug 2021 19:31:05 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/libopenshot/effect-transition/</guid>
+      <description>Effect 上图展示了在OpenShot中给视频添加了Wave这个效果： 选择Effect拖拽到对应clip上 选择效果图标，可以看到effect属性修改</description>
+    </item>
+    
+    <item>
+      <title>libopenshot-Timeline和Clip中的Frame合成</title>
+      <link>https://teoking.github.io/post/libopenshot/timeline/</link>
+      <pubDate>Mon, 02 Aug 2021 15:28:28 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/libopenshot/timeline/</guid>
+      <description>在《libopenshot-基本概念以及播放器实现》一文中，其中一个示例是两个clip操作的展示，我们实现了在视频画面之上显示一张静态图片。</description>
+    </item>
+    
+    <item>
+      <title>专题-从libopenshot学习视频编辑器</title>
+      <link>https://teoking.github.io/post/libopenshot/outline/</link>
+      <pubDate>Fri, 30 Jul 2021 15:28:28 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/libopenshot/outline/</guid>
+      <description>libopenshot简介 libopenshot是OpenShot这款桌面软件的编辑库，其包含的功能有： Cross-Platform (Linux, Mac, and Windows) &amp;ndash; 跨平台。我使用Windo</description>
+    </item>
+    
+    <item>
+      <title>libopenshot-基本概念以及播放器实现</title>
+      <link>https://teoking.github.io/post/libopenshot/concept-and-player-impl/</link>
+      <pubDate>Wed, 28 Jul 2021 20:08:28 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/libopenshot/concept-and-player-impl/</guid>
+      <description>概要 四大模块 要理解libopenshot，就先要理解以下四个最基本的构建块（类似于Android中的四大组件）： Readers: 一个reader是用以读取</description>
+    </item>
+    
+    <item>
+      <title>libopenshot-编译</title>
+      <link>https://teoking.github.io/post/libopenshot/build/</link>
+      <pubDate>Tue, 20 Jul 2021 21:28:28 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/libopenshot/build/</guid>
+      <description>编译 Mac端编译 编译方法请参照官方文档Mac Build Instructions, 代码基于70aedd3. 这里记录一下我在macOS 11.4（非M1）上编译时碰到的错误。 命令</description>
+    </item>
+    
+  </channel>
+</rss>

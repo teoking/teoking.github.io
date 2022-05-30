@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>RxCocoa on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/rxcocoa/</link>
+    <description>Recent content in RxCocoa on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 06 May 2021 18:19:57 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/rxcocoa/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>RxSwift和RxCocoa入门</title>
+      <link>https://teoking.github.io/post/getting_started_with_rxswift_and_rxcocoa/</link>
+      <pubDate>Thu, 06 May 2021 18:19:57 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/getting_started_with_rxswift_and_rxcocoa/</guid>
+      <description>本文主要来自Getting Started With RxSwift and RxCocoa这篇文章 命令式编程 vs 响应式编程 目前大部分面向对象语言都是命令式的编程范式，即通过代码下达命令</description>
+    </item>
+    
+  </channel>
+</rss>

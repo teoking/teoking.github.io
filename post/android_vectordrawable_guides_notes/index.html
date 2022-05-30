@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Android VectorDrawable系列文章Review - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="该系列文章作者是Android团队的Nick Butcher： Understanding Android’s vector image format: VectorDrawable Draw a Path: Rendering Android VectorDrawables Using vector assets in Android apps Vector Assets - Android Conference Talks Vector Drawabl" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/android_vectordrawable_guides_notes/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Android VectorDrawable系列文章Review" />
+<meta property="og:description" content="该系列文章作者是Android团队的Nick Butcher： Understanding Android’s vector image format: VectorDrawable Draw a Path: Rendering Android VectorDrawables Using vector assets in Android apps Vector Assets - Android Conference Talks Vector Drawabl" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/android_vectordrawable_guides_notes/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-05-06T19:05:47+08:00" />
+<meta property="article:modified_time" content="2021-05-06T19:05:47+08:00" />
+
+<meta itemprop="name" content="Android VectorDrawable系列文章Review">
+<meta itemprop="description" content="该系列文章作者是Android团队的Nick Butcher： Understanding Android’s vector image format: VectorDrawable Draw a Path: Rendering Android VectorDrawables Using vector assets in Android apps Vector Assets - Android Conference Talks Vector Drawabl"><meta itemprop="datePublished" content="2021-05-06T19:05:47+08:00" />
+<meta itemprop="dateModified" content="2021-05-06T19:05:47+08:00" />
+<meta itemprop="wordCount" content="2177">
+<meta itemprop="keywords" content="Android,VectorDrawable," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Android VectorDrawable系列文章Review"/>
+<meta name="twitter:description" content="该系列文章作者是Android团队的Nick Butcher： Understanding Android’s vector image format: VectorDrawable Draw a Path: Rendering Android VectorDrawables Using vector assets in Android apps Vector Assets - Android Conference Talks Vector Drawabl"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Android VectorDrawable系列文章Review</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-05-06 </span>
+        <div class="post-category">
+            <a href="/categories/ui/"> UI </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#understanding-androids-vector-image-format-vectordrawable">Understanding Android’s vector image format: VectorDrawable</a></li>
+    <li><a href="#draw-a-path-rendering-android-vectordrawables">Draw a Path: Rendering Android VectorDrawables</a></li>
+    <li><a href="#using-vector-assets-in-android-apps">Using vector assets in Android apps</a></li>
+    <li><a href="#vector-assets---android-conference-talks">Vector Assets - Android Conference Talks</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>该系列文章作者是Android团队的Nick Butcher：</p>
+<p><a href="https://medium.com/androiddevelopers/understanding-androids-vector-image-format-vectordrawable-ab09e41d5c68">Understanding Android’s vector image format: VectorDrawable</a></p>
+<p><a href="https://medium.com/androiddevelopers/draw-a-path-rendering-android-vectordrawables-89a33b5e5ebf">Draw a Path: Rendering Android VectorDrawables</a></p>
+<p><a href="https://medium.com/androiddevelopers/using-vector-assets-in-android-apps-4318fd662eb9">Using vector assets in Android apps</a></p>
+<p><a href="https://www.youtube.com/watch?v=fgbl34me3kk">Vector Assets - Android Conference Talks</a></p>
+<p>Vector Drawable制作工具：</p>
+<p><a href="https://shapeshifter.design/">Shape Shifter</a></p>
+<h1 id="understanding-androids-vector-image-format-vectordrawable">Understanding Android’s vector image format: VectorDrawable</h1>
+<p>这篇文章主要介绍了vector：</p>
+<p><strong>vector相比非矢量图（png，jpeg，bmp，gif，webp等）的主要优点有三个</strong></p>
+<ul>
+<li>resize后不失真，这样就可以避免为不同dpi出不同尺寸资源图，也不用为未来更大的dpi更新资源图</li>
+<li>大小更小，作者距离I/O app中的一个图使用vector技术的话，尺寸能降低到原图的30%</li>
+<li>vector可以实现动画</li>
+</ul>
+<p><strong>vector的不足之处</strong></p>
+<ul>
+<li>需要decoding。decoding过程氛围inflation和drawing（如下）。这个过程的耗时取决vector图的复杂程度，对于静态的vector，这个过程执行一次后，其结果会缓存到一个<code>Bitmap</code>中；但是animated vector的话，就没法做缓存优化，因为它的属性是会变化并需要重绘。而像PNG这样的raster assets，只需要decode文件内容，并且这个过程如今已经经过了高度优化。</li>
+<li>inflation：读取vector文件并parse到一个<code>VectorDrawable</code>，生成paths, groups等model</li>
+<li>drawing：执行<code>Canvas</code>命令来绘制上面的model对象</li>
+<li>适应性（suitability）。比较适合来描述像icon之类素材，很不适合去做像风景、人像等素材，这时候还是去用raster asset（如webp）。</li>
+<li>缺乏工具。这就导致设计师和开发者之间有工作流上的gap。（官方工具好想还没有，有一些第三方工具：https://shapeshifter.design/）</li>
+<li>个人再补充一个就是跨平台问题。针对Android平台的vector不能用到iOS上。</li>
+</ul>
+<p><strong>作者还谈到为什么Android没有选择SVG标准，而是要自定义格式：</strong></p>
+<p>SVG格式是web平台的工业标准，虽然有丰富、成熟的工具，但是它的标准太大，包括了很多复杂的特性，如执行任意JavaScript代码，blur&amp;filter效果，嵌入其它图片（甚至动画gif）。Android毕竟是电源受限的移动设备，全面支持SVG不现实</p>
+<p>Android目前支持了SVG中的<a href="https://www.w3.org/TR/SVG/paths.html">path</a>。</p>
+<p>此外通过自定义格式，VectorDrawable可以和Android平台目前的特性实现集成，比如<code>@colors</code>, <code>@dimens</code>, <code>@strings</code>，使用theme属性，<code>AnimatedVectorDrawable</code>使用系统中的<code>Animator</code>等。</p>
+<p><strong>VectorDrawable的兼容性</strong></p>
+<p>这里主要介绍了对SVG path标准的支持情况。</p>
+<h1 id="draw-a-path-rendering-android-vectordrawables">Draw a Path: Rendering Android VectorDrawables</h1>
+<p>这篇文章主要介绍了VectorDrawable的用法：</p>
+<ul>
+<li>基本用法，如颜色、tint、和color resource集成、和theme集成、ColorStateLists、Gradients</li>
+</ul>
+<p>其中还包括一些示例代码</p>
+<h1 id="using-vector-assets-in-android-apps">Using vector assets in Android apps</h1>
+<p>这篇文章主要将如何使用vector资源，主要面临的问题是兼容性问题，其核心点是：务必使用<code>VectorDrawableCompat</code>而不是<code>VectorDrawable</code>！</p>
+<h1 id="vector-assets---android-conference-talks">Vector Assets - Android Conference Talks</h1>
+<p>最后这个视频是本系列文章的作者Nick Butcher带来的关于Android平台Vector素材的讲解视频。这个视频的内容除了将上面三篇文章的内容讲了一遍，还介绍了如下的内容：</p>
+<ul>
+<li>Android Studio中的SVG To VD工具，编辑工具</li>
+<li>Sketch工具中如何导出合适的SVG，以及其插件<a href="https://github.com/sketch-hq/svgo-compressor">svgo compressor</a>以及插件的配置（使用SVG Tiny 1.2 Profile，以保证Android平台的兼容性）</li>
+<li>推荐尺寸小于200 * 200 dp，path char数量小于800（Android Lint中包含了对path char超过800的警告规则）</li>
+<li>使用Shape Shifter工具将VD转换为SVG，再用Sketch修改后输出新的SVG</li>
+<li>与设计沟通，降低SVG中不必要的细节来减少VD的复杂度</li>
+<li>path morphing的应用，及会碰到的坑（平台限制能morphing的两个path的command数量和类型必须相同，否则会报错），以及使用Shape Shifter搞定这个事情</li>
+</ul>
+<h1 id="总结">总结</h1>
+<p>2016年的时候在<a href="https://www.androiddesignpatterns.com/2016/11/introduction-to-icon-animation-techniques.html">Alex Lockwood的博客文章介绍这个技术</a>，还在团队内部做了介绍，但后来由于一些原因没有应用起来。今天回过头来把Nick和Alex的系列文章和工具review了一遍后，发现Android平台应用这个技术已经不存在太大门槛，并且随着Shape Shifter、Sketch和Android Studio等工具链的补齐，设计师到开发者之间已经没有太大的gap。</p>
+<p>还有一个问题是Android和iOS平台的兼容性。iOS平台没有native SVG的支持（WebKit的SVG支持不算是native支持），也需要使用到第三方库（如<a href="https://github.com/SVGKit/SVGKit">SVGKit</a>）。那么这里的问题来了：Android VD仅支持SVG Path标准，那SVGKit能否实现Android兼容的SVG的复用呢？此外，Sketch、svgo这些工具是否做了跨平台标准的兼容？这些都是实际落地的问题，目前我还没有明确答案。这个问题在做跨平台app时需要考虑。</p>
+<p>总体上看，跨平台实现SVG技术（或者衍生技术）目前来说是可行的，实际应用中的坑也不会很大。</p>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-05-06
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/android/">Android</a>
+          <a href="/tags/vectordrawable/">VectorDrawable</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/android_development_best_practices/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">Android Development最佳实践</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/intercept_touch_event_in_ios/">
+            <span class="next-text nav-default">iOS touch事件的拦截</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kotlin Coroutine on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/kotlin-coroutine/</link>
+    <description>Recent content in Kotlin Coroutine on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Thu, 06 May 2021 17:46:28 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/kotlin-coroutine/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Kotlin Coroutine in Action</title>
+      <link>https://teoking.github.io/post/kotlin_coroutine_in_action/</link>
+      <pubDate>Thu, 06 May 2021 17:46:28 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/kotlin_coroutine_in_action/</guid>
+      <description>这篇文章是我对团队内的一次技术分享 Outline What is Kotlin Coroutine? 协程什么？解决了什么问题？ 协程概念核心点：函数或一段程序能够被挂起，稍后再在挂起的位置恢复。 与线</description>
+    </item>
+    
+  </channel>
+</rss>

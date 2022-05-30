@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Message Queue on Teoking writes something.</title>
+    <link>https://teoking.github.io/tags/message-queue/</link>
+    <description>Recent content in Message Queue on Teoking writes something.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 31 May 2021 23:41:15 +0800</lastBuildDate><atom:link href="https://teoking.github.io/tags/message-queue/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>从单元测试看Handler</title>
+      <link>https://teoking.github.io/post/learn_handler_by_unit_tests/</link>
+      <pubDate>Mon, 31 May 2021 23:41:15 +0800</pubDate>
+      
+      <guid>https://teoking.github.io/post/learn_handler_by_unit_tests/</guid>
+      <description>首先提出两个问题： Handler主要解决了什么问题？ 如何实现的延迟消息？ 概述 Handler是Android OS中根基性的组件，在framew</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>libopenshot-基本概念以及播放器实现 - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="概要 四大模块 要理解libopenshot，就先要理解以下四个最基本的构建块（类似于Android中的四大组件）： Readers: 一个reader是用以读取" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/libopenshot/concept-and-player-impl/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="libopenshot-基本概念以及播放器实现" />
+<meta property="og:description" content="概要 四大模块 要理解libopenshot，就先要理解以下四个最基本的构建块（类似于Android中的四大组件）： Readers: 一个reader是用以读取" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/libopenshot/concept-and-player-impl/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-07-28T20:08:28+08:00" />
+<meta property="article:modified_time" content="2021-07-28T20:08:28+08:00" />
+
+<meta itemprop="name" content="libopenshot-基本概念以及播放器实现">
+<meta itemprop="description" content="概要 四大模块 要理解libopenshot，就先要理解以下四个最基本的构建块（类似于Android中的四大组件）： Readers: 一个reader是用以读取"><meta itemprop="datePublished" content="2021-07-28T20:08:28+08:00" />
+<meta itemprop="dateModified" content="2021-07-28T20:08:28+08:00" />
+<meta itemprop="wordCount" content="4960">
+<meta itemprop="keywords" content="C&#43;&#43;,libopenshot,video-editing,video-processing,video-effects," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="libopenshot-基本概念以及播放器实现"/>
+<meta name="twitter:description" content="概要 四大模块 要理解libopenshot，就先要理解以下四个最基本的构建块（类似于Android中的四大组件）： Readers: 一个reader是用以读取"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">libopenshot-基本概念以及播放器实现</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2021-07-28 </span>
+        <div class="post-category">
+            <a href="/categories/av/"> AV </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#概要">概要</a>
+      <ul>
+        <li><a href="#四大模块"><strong>四大模块</strong></a></li>
+        <li><a href="#工程规模"><strong>工程规模</strong></a></li>
+      </ul>
+    </li>
+    <li><a href="#示例">示例</a>
+      <ul>
+        <li><a href="#timeline基本用法">Timeline基本用法</a></li>
+        <li><a href="#两个clip操作">两个Clip操作</a></li>
+        <li><a href="#openshot-player">openshot-player</a>
+          <ul>
+            <li><a href="#qtplayer">QtPlayer</a></li>
+            <li><a href="#playerprivate">PlayerPrivate</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#参考资料">参考资料</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <h1 id="概要">概要</h1>
+<h2 id="四大模块"><strong>四大模块</strong></h2>
+<p>要理解libopenshot，就先要理解以下四个最基本的构建块（类似于Android中的四大组件）：</p>
+<ul>
+<li>Readers: 一个reader是用以读取视频、音频、图片文件或流，然后返回<code>openshot::Frame</code>对象
+<ul>
+<li>常见reader有： <code>openshot::FFmpegReader</code>, <code>openshot::TextReader</code>, <code>openshot::ImageReader</code>, <code>openshot::ChunkReader</code>,  <code>openshot::FrameMapper</code></li>
+</ul>
+</li>
+<li>Writers: 一个writer消费<code>openshot::Frame</code>对象，用以写入/创建一个视频、音频、图片文件或流
+<ul>
+<li>常见writer有： <code>openshot::FFmpegWriter</code>,<code> openshot::ImageWriter</code>, <code>openshot::ChunkWriter</code></li>
+</ul>
+</li>
+<li>Timeline: 一个timeline允许对许多<code>openshot::Clip</code>对象进行裁剪(trimmed), 排列(arranged)和分层(layered)
+<ul>
+<li><code>openshot::Timeline</code>是一个特殊的reader，构建自<code>openshot::Clip</code>对象（每个clip包含一个reader）</li>
+</ul>
+</li>
+<li>Keyframe: 一个keyframe用以在timeline上随时间改变属性（基于曲线的动画）
+<ul>
+<li>在timeline上使用<code>openshot::Keyframe</code>, <code>openshot::Point</code>和<code>openshot::Coordinate</code>来改变动画属性</li>
+</ul>
+</li>
+</ul>
+<h2 id="工程规模"><strong>工程规模</strong></h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">-------------------------------------------------------------------------------
+</span></span><span class="line"><span class="cl">Language                     files          blank        comment           code
+</span></span><span class="line"><span class="cl">-------------------------------------------------------------------------------
+</span></span><span class="line"><span class="cl">C++                             79           4228           6905          15579
+</span></span><span class="line"><span class="cl">C/C++ Header                    90           1825           5420           4363
+</span></span><span class="line"><span class="cl">CMake                            2             85            148            403
+</span></span><span class="line"><span class="cl">Protocol Buffers                 3             23             15             55
+</span></span><span class="line"><span class="cl">-------------------------------------------------------------------------------
+</span></span><span class="line"><span class="cl">SUM:                           174           6161          12488          20400
+</span></span><span class="line"><span class="cl">-------------------------------------------------------------------------------
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>核心模块有2w行代码，但使用了多个外部库：</p>
+<ul>
+<li><a href="http://www.qt.io/qt5/">Qt 5</a> (libqt5)
+<ul>
+<li>用以显示视频，存储图片数据，合成图像，应用图片效果，及其它功能，如文件系统封装、高分辨率定时器等</li>
+</ul>
+</li>
+<li><a href="http://www.ffmpeg.org/">FFmpeg</a> (libavformat, libavcodec, libavutil, libavdevice, libavresample, libswscale)
+<ul>
+<li>用以编解码音频、视频和图片文件，获取媒体文件信息，如frame rate, sample rate, aspect ratio及其它属性</li>
+</ul>
+</li>
+<li><a href="http://www.imagemagick.org/script/magick++.php">ImageMagick++</a> (libMagick++, libMagickWand, libMagickCore)
+<ul>
+<li>这个库是可选的，用以编码、解码图片</li>
+</ul>
+</li>
+<li><a href="https://github.com/OpenShot/libopenshot-audio/">OpenShot Audio Library</a> (libopenshot-audio)
+<ul>
+<li>基于<a href="https://en.wikipedia.org/wiki/JUCE">JUCE框架</a>，用以mix、resample、host plug-ins和音频播放</li>
+</ul>
+</li>
+</ul>
+<h1 id="示例">示例</h1>
+<h2 id="timeline基本用法">Timeline基本用法</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Types for storing time durations in whole and fractional milliseconds
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">using</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">using</span> <span class="n">s</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">seconds</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">using</span> <span class="n">double_ms</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">ms</span><span class="o">::</span><span class="n">period</span><span class="o">&gt;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// FFmpeg Reader performance test
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="k">auto</span> <span class="n">total_1</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">FFmpegReader</span> <span class="n">r9</span><span class="p">(</span><span class="s">&#34;/Users/ted/Desktop/SampleVideo_1280x720_10mb.mp4&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">r9</span><span class="p">.</span><span class="n">Open</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">int</span> <span class="n">frame</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">frame</span> <span class="o">&lt;=</span> <span class="mi">1000</span><span class="p">;</span> <span class="n">frame</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="k">auto</span> <span class="n">time1</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Frame</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">r9</span><span class="p">.</span><span class="n">GetFrame</span><span class="p">(</span><span class="n">frame</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="k">auto</span> <span class="n">time2</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;FFmpegReader: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">frame</span>
+</span></span><span class="line"><span class="cl">                  <span class="o">&lt;&lt;</span> <span class="s">&#34; (&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">double_ms</span><span class="p">(</span><span class="n">time2</span> <span class="o">-</span> <span class="n">time1</span><span class="p">).</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; ms)</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="k">auto</span> <span class="n">total_2</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">total_sec</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">ms</span><span class="o">&gt;</span><span class="p">(</span><span class="n">total_2</span> <span class="o">-</span> <span class="n">total_1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;FFmpegReader TOTAL: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">total_sec</span><span class="p">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; ms</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">r9</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Timeline Reader performance test
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Timeline</span> <span class="n">tm</span><span class="p">(</span><span class="n">r9</span><span class="p">.</span><span class="n">info</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Clip</span> <span class="o">*</span><span class="n">c</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Clip</span><span class="p">(</span><span class="o">&amp;</span><span class="n">r9</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tm</span><span class="p">.</span><span class="n">AddClip</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tm</span><span class="p">.</span><span class="n">Open</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="k">auto</span> <span class="n">total_3</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">int</span> <span class="n">frame</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">frame</span> <span class="o">&lt;=</span> <span class="mi">1000</span><span class="p">;</span> <span class="n">frame</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="k">auto</span> <span class="n">time1</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Frame</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">tm</span><span class="p">.</span><span class="n">GetFrame</span><span class="p">(</span><span class="n">frame</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="k">auto</span> <span class="n">time2</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Timeline: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">frame</span>
+</span></span><span class="line"><span class="cl">                  <span class="o">&lt;&lt;</span> <span class="s">&#34; (&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">double_ms</span><span class="p">(</span><span class="n">time2</span> <span class="o">-</span> <span class="n">time1</span><span class="p">).</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; ms)</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="k">auto</span> <span class="n">total_4</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">total_sec</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">ms</span><span class="o">&gt;</span><span class="p">(</span><span class="n">total_4</span> <span class="o">-</span> <span class="n">total_3</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Timeline TOTAL: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">total_sec</span><span class="p">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; ms</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tm</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Completed successfully!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面这个例子是分别通过FFmpegReader和Timeline去读取帧。测试结果大概是，<strong>前者读取每一帧大约花费1.2ms ~ 2.0ms，后者约在2.6ms ~ 4.2ms</strong>。</p>
+<p>Timeline三种构造方法:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">/// @brief Constructor for the timeline (which configures the default frame properties)
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param width The image width of generated openshot::Frame objects
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param height The image height of generated openshot::Frame objects
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param fps The frame rate of the generated video
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param sample_rate The audio sample rate
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param channels The number of audio channels
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param channel_layout The channel layout (i.e. mono, stereo, 3 point surround, etc...)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Timeline</span><span class="p">(</span><span class="kt">int</span> <span class="n">width</span><span class="p">,</span> <span class="kt">int</span> <span class="n">height</span><span class="p">,</span> <span class="n">openshot</span><span class="o">::</span><span class="n">Fraction</span> <span class="n">fps</span><span class="p">,</span> <span class="kt">int</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="kt">int</span> <span class="n">channels</span><span class="p">,</span> <span class="n">openshot</span><span class="o">::</span><span class="n">ChannelLayout</span> <span class="n">channel_layout</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">/// @brief Constructor which takes a ReaderInfo struct to configure parameters
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param info The reader parameters to configure the new timeline with
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Timeline</span><span class="p">(</span><span class="n">ReaderInfo</span> <span class="n">info</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">/// @brief Project-file constructor for the timeline
+</span></span></span><span class="line"><span class="cl"><span class="c1">///
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// Loads a JSON structure from a file path, and
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// initializes the timeline described within.
+</span></span></span><span class="line"><span class="cl"><span class="c1">///
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param projectPath The path of the UTF-8 *.osp project file (JSON contents). Contents will be loaded automatically.
+</span></span></span><span class="line"><span class="cl"><span class="c1">/// @param convert_absolute_paths Should all paths be converted to absolute paths (relative to the location of projectPath)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Timeline</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">projectPath</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">convert_absolute_paths</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>第一个构造器可以指定详细的构造参数，第二个构造器可以从ReaderInfo构造出对象，第三个构造参数可以从osp文件（openshot项目描述文件）构造对象。</p>
+<h2 id="两个clip操作">两个Clip操作</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">testTwoClips</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Create a Timeline
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Timeline</span> <span class="n">t</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span> <span class="c1">// width
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>               <span class="mi">720</span><span class="p">,</span> <span class="c1">// height
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>               <span class="n">Fraction</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="c1">// framerate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>               <span class="mi">44100</span><span class="p">,</span> <span class="c1">// sample rate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>               <span class="mi">2</span><span class="p">,</span> <span class="c1">// channels
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>               <span class="n">ChannelLayout</span><span class="o">::</span><span class="n">LAYOUT_STEREO</span>
+</span></span><span class="line"><span class="cl">               <span class="p">);</span>
+</span></span><span class="line"><span class="cl">     
+</span></span><span class="line"><span class="cl">    <span class="c1">// Create some clips
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="k">auto</span> <span class="n">imageReader</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ImageReader</span><span class="p">(</span><span class="n">IMAGE_PATH</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="k">auto</span> <span class="n">ffmpegReader</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FFmpegReader</span><span class="p">(</span><span class="n">VIDEO_PATH</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Clip</span> <span class="n">c1</span><span class="p">(</span><span class="n">imageReader</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Clip</span> <span class="n">c2</span><span class="p">(</span><span class="n">ffmpegReader</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;ImageReader  video_length: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">imageReader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">video_length</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;FFmpegReader video_length: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">ffmpegReader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">video_length</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     
+</span></span><span class="line"><span class="cl">    <span class="c1">// CLIP 1 (logo) - Set some clip properties (with Keyframes)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c1</span><span class="p">.</span><span class="n">Position</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span> <span class="c1">// Set the position or location (in seconds) on the timeline
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c1</span><span class="p">.</span><span class="n">gravity</span> <span class="o">=</span> <span class="n">GRAVITY_LEFT</span><span class="p">;</span> <span class="c1">// Set the alignment / gravity of the clip (position on the screen)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c1</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">SCALE_CROP</span><span class="p">;</span> <span class="c1">// Set the scale mode (how the image is resized to fill the screen)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c1</span><span class="p">.</span><span class="n">Layer</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// Set the layer of the timeline (higher layers cover up images of lower layers)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c1</span><span class="p">.</span><span class="n">Start</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span> <span class="c1">// Set the starting position of the video (trim the left side of the video)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c1</span><span class="p">.</span><span class="n">End</span><span class="p">(</span><span class="mf">16.0</span><span class="p">);</span> <span class="c1">// Set the ending position of the video (trim the right side of the video)
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    c1.alpha.AddPoint(1, 0.0); // Set the alpha to transparent on frame #1
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    c1.alpha.AddPoint(500, 0.0); // Keep the alpha transparent until frame #500
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    c1.alpha.AddPoint(565, 1.0); // Animate the alpha from transparent to visible (between frame #501 and #565)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c1</span><span class="p">.</span><span class="n">scale_x</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">c1</span><span class="p">.</span><span class="n">scale_y</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">c1</span><span class="p">.</span><span class="n">location_x</span> <span class="o">=</span> <span class="mf">0.33</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     
+</span></span><span class="line"><span class="cl">    <span class="c1">// CLIP 2 (background video) - Set some clip properties (with Keyframes)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c2</span><span class="p">.</span><span class="n">Position</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span> <span class="c1">// Set the position or location (in seconds) on the timeline
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c2</span><span class="p">.</span><span class="n">Start</span><span class="p">(</span><span class="mf">10.0</span><span class="p">);</span> <span class="c1">// Set the starting position of the video (trim the left side of the video)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">c2</span><span class="p">.</span><span class="n">Layer</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// Set the layer of the timeline (higher layers cover up images of lower layers)
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    c2.alpha.AddPoint(1, 1.0); // Set the alpha to visible on frame #1
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    c2.alpha.AddPoint(150, 0.0); // Animate the alpha to transparent (between frame 2 and frame #150)
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    c2.alpha.AddPoint(360, 0.0, LINEAR); // Keep the alpha transparent until frame #360
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    c2.alpha.AddPoint(384, 1.0); // Animate the alpha to visible (between frame #360 and frame #384)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     
+</span></span><span class="line"><span class="cl">    <span class="c1">// Add clips to timeline
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">t</span><span class="p">.</span><span class="n">AddClip</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">t</span><span class="p">.</span><span class="n">AddClip</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">     
+</span></span><span class="line"><span class="cl">    <span class="c1">// Open the timeline reader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">t</span><span class="p">.</span><span class="n">Open</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">t</span><span class="p">.</span><span class="n">viewport_x</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">t</span><span class="p">.</span><span class="n">viewport_y</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">t</span><span class="p">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">Color</span><span class="p">(</span><span class="s">&#34;FF0000&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Max time: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">t</span><span class="p">.</span><span class="n">GetMaxTime</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Max frame: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">t</span><span class="p">.</span><span class="n">GetMaxFrame</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">list</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">ids</span> <span class="o">=</span> <span class="n">t</span><span class="p">.</span><span class="n">GetTrackedObjectsIds</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Tracked id size: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">ids</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">list</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">ids</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">ids</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Tracked id: &#34;</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">list</span><span class="o">&lt;</span><span class="n">Clip</span><span class="o">*&gt;</span> <span class="n">clips</span> <span class="o">=</span> <span class="n">t</span><span class="p">.</span><span class="n">Clips</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Clips size: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">clips</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Get frame number 1 from the timeline (This will generate a new frame, made up from the previous clips and settings)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Frame</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">t</span><span class="p">.</span><span class="n">GetFrame</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Now that we have an openshot::Frame object, lets have some fun!
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">f</span><span class="o">-&gt;</span><span class="n">Display</span><span class="p">();</span> <span class="c1">// Display the frame on the screen
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     
+</span></span><span class="line"><span class="cl">    <span class="c1">// Close the timeline reader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">t</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">testTwoClips</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面这个示例展示了往TImeline中添加两个Clip。显示效果如下：</p>
+<p><img src="../two-clips.png" alt="Two clips result"></p>
+<h2 id="openshot-player">openshot-player</h2>
+<p>这个例子演示的是一个本地视频文件播放器实现。</p>
+<p>实现的功能：</p>
+<ul>
+<li>选择视频文件</li>
+<li>播放、暂停</li>
+<li>seek</li>
+<li>改变播放速度</li>
+<li>改变音量</li>
+</ul>
+<p>主要实现类：</p>
+<ul>
+<li>QtPlayer &ndash; 播放器封装，串联播放器实现</li>
+<li>PlayerPrivate &ndash; 播放器实现，主要是解码</li>
+<li>VideoRenderWidget &ndash; 播放控件，用以显示解码出来的frame</li>
+<li>VideoPlaybackThread</li>
+<li>AudioPlaybackThread</li>
+<li>VideoCacheThread</li>
+</ul>
+<h3 id="qtplayer">QtPlayer</h3>
+<p>主要流程：</p>
+<ol>
+<li>选择本地媒体文件 &ndash;&gt; 设置数据源 &ndash;&gt; 设置纵横比 &ndash;&gt; 播放</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// player是QtPlayer
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Create FFmpegReader and open file
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">player</span><span class="o">-&gt;</span><span class="n">SetSource</span><span class="p">(</span><span class="n">filename</span><span class="p">.</span><span class="n">toStdString</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Set aspect ratio of widget
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">video</span><span class="o">-&gt;</span><span class="n">SetAspectRatio</span><span class="p">(</span><span class="n">player</span><span class="o">-&gt;</span><span class="n">Reader</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">display_ratio</span><span class="p">,</span> <span class="n">player</span><span class="o">-&gt;</span><span class="n">Reader</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">pixel_ratio</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Play video
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">player</span><span class="o">-&gt;</span><span class="n">Play</span><span class="p">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>QtPlayer::SetSource</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">QtPlayer</span><span class="o">::</span><span class="n">SetSource</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">source</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 用source创建一个FFmpegReader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">FFmpegReader</span> <span class="o">*</span><span class="n">ffreader</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FFmpegReader</span><span class="p">(</span><span class="n">source</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 打印ReaderInfo信息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">ffreader</span><span class="o">-&gt;</span><span class="n">DisplayInfo</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 设置采样率
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// Use default sample rate (or use the FFmpegReader&#39;s audio settings if any)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">int</span> <span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">44100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">ffreader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">sample_rate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sample_rate</span> <span class="o">=</span> <span class="n">ffreader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">sample_rate</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 设置音轨数量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// Use default channels (or use the FFmpegReader&#39;s audio settings if any)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">int</span> <span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">ffreader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">channels</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">channels</span> <span class="o">=</span> <span class="n">ffreader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">channels</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 设置为环绕声
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// Use default channel layout (or use the FFmpegReader&#39;s audio settings if any)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">openshot</span><span class="o">::</span><span class="n">ChannelLayout</span> <span class="n">channel_layout</span> <span class="o">=</span> <span class="n">openshot</span><span class="o">::</span><span class="n">LAYOUT_STEREO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">channels</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">channel_layout</span> <span class="o">=</span> <span class="n">ffreader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">channel_layout</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 创建timeline和clip
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// Create timeline instance (720p, since we have no re-scaling in this player yet)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">reader</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Timeline</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span> <span class="mi">720</span><span class="p">,</span> <span class="n">ffreader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">fps</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">channel_layout</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Clip</span> <span class="o">*</span><span class="n">c</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Clip</span><span class="p">(</span><span class="n">source</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">Timeline</span><span class="o">*</span> <span class="n">tm</span> <span class="o">=</span> <span class="p">(</span><span class="n">Timeline</span><span class="o">*</span><span class="p">)</span><span class="n">reader</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">tm</span><span class="o">-&gt;</span><span class="n">AddClip</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">tm</span><span class="o">-&gt;</span><span class="n">Open</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// Set the reader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Reader</span><span class="p">(</span><span class="n">reader</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 这里将reader设置给了p、videoCache、audioPlayback对象
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Set the reader object
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">QtPlayer</span><span class="o">::</span><span class="n">Reader</span><span class="p">(</span><span class="n">openshot</span><span class="o">::</span><span class="n">ReaderBase</span> <span class="o">*</span><span class="n">new_reader</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// Set new reader. Note: Be sure to close and dispose of the old reader after calling this
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">reader</span> <span class="o">=</span> <span class="n">new_reader</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">reader</span> <span class="o">=</span> <span class="n">new_reader</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">videoCache</span><span class="o">-&gt;</span><span class="n">Reader</span><span class="p">(</span><span class="n">new_reader</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">audioPlayback</span><span class="o">-&gt;</span><span class="n">Reader</span><span class="p">(</span><span class="n">new_reader</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>VideoRenderWidget::SetAspectRatio</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// 给render设置纵横比
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">VideoRenderWidget</span><span class="o">::</span><span class="n">SetAspectRatio</span><span class="p">(</span><span class="n">openshot</span><span class="o">::</span><span class="n">Fraction</span> <span class="n">new_aspect_ratio</span><span class="p">,</span> <span class="n">openshot</span><span class="o">::</span><span class="n">Fraction</span> <span class="n">new_pixel_ratio</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">aspect_ratio</span> <span class="o">=</span> <span class="n">new_aspect_ratio</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">pixel_ratio</span> <span class="o">=</span> <span class="n">new_pixel_ratio</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>播放：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// QtPlayer::Play()
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">QtPlayer</span><span class="o">::</span><span class="n">Play</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// Set mode to playing, and speed to normal
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">mode</span> <span class="o">=</span> <span class="n">PLAYBACK_PLAY</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Speed</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">reader</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">threads_started</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// p是PlayerPrivate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// Start thread only once
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">p</span><span class="o">-&gt;</span><span class="n">startPlayback</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">threads_started</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h3 id="playerprivate">PlayerPrivate</h3>
+<p>PlayerPrivate的创建</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Constructor
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">PlayerPrivate</span><span class="o">::</span><span class="n">PlayerPrivate</span><span class="p">(</span><span class="n">openshot</span><span class="o">::</span><span class="n">RendererBase</span> <span class="o">*</span><span class="n">rb</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">:</span> <span class="n">renderer</span><span class="p">(</span><span class="n">rb</span><span class="p">),</span> <span class="n">Thread</span><span class="p">(</span><span class="s">&#34;player&#34;</span><span class="p">),</span> <span class="n">video_position</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">audio_position</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>	<span class="c1">// 设置渲染器、创建player线程等
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">,</span> <span class="n">audioPlayback</span><span class="p">(</span><span class="k">new</span> <span class="n">openshot</span><span class="o">::</span><span class="n">AudioPlaybackThread</span><span class="p">())</span>	<span class="c1">// 音频播放线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">,</span> <span class="n">videoPlayback</span><span class="p">(</span><span class="k">new</span> <span class="n">openshot</span><span class="o">::</span><span class="n">VideoPlaybackThread</span><span class="p">(</span><span class="n">rb</span><span class="p">))</span>	<span class="c1">// 视频播放线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">,</span> <span class="n">videoCache</span><span class="p">(</span><span class="k">new</span> <span class="n">openshot</span><span class="o">::</span><span class="n">VideoCacheThread</span><span class="p">())</span>		<span class="c1">// 视频缓存线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">,</span> <span class="n">speed</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">reader</span><span class="p">(</span><span class="nb">NULL</span><span class="p">),</span> <span class="n">last_video_position</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>	<span class="c1">// 设置速度、reader和最后一位视频帧位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">{</span> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>开始视频和音频播放</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Start video/audio playback
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">bool</span> <span class="n">PlayerPrivate</span><span class="o">::</span><span class="n">startPlayback</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">video_position</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// 结束播放
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">stopPlayback</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 开启当前线程。这个线程是juce::Thread，当线程没有运行时，startThread会让run()方法被调用；如果线程已经在运行，startThread()调用就没什么作用了
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">startThread</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>结束视频和音频播放</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Stop video/audio playback
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">PlayerPrivate</span><span class="o">::</span><span class="n">stopPlayback</span><span class="p">(</span><span class="kt">int</span> <span class="n">timeOutMilliseconds</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">audioPlayback</span><span class="o">-&gt;</span><span class="n">isThreadRunning</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_audio</span><span class="p">)</span> <span class="n">audioPlayback</span><span class="o">-&gt;</span><span class="n">stopThread</span><span class="p">(</span><span class="n">timeOutMilliseconds</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">videoCache</span><span class="o">-&gt;</span><span class="n">isThreadRunning</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_video</span><span class="p">)</span> <span class="n">videoCache</span><span class="o">-&gt;</span><span class="n">stopThread</span><span class="p">(</span><span class="n">timeOutMilliseconds</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">videoPlayback</span><span class="o">-&gt;</span><span class="n">isThreadRunning</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_video</span><span class="p">)</span> <span class="n">videoPlayback</span><span class="o">-&gt;</span><span class="n">stopThread</span><span class="p">(</span><span class="n">timeOutMilliseconds</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 尝试结束线程的运行
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">isThreadRunning</span><span class="p">())</span> <span class="n">stopThread</span><span class="p">(</span><span class="n">timeOutMilliseconds</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从这里我们看到，<code>PlayerPrivate</code>有4条工作线程：<code>AudioPlaybackThread</code>, <code>VideoPlaybackThread</code>, <code>VideoCacheThread</code>以及当前线程（<code>PlayerPrivate</code>本身就是一个线程）。</p>
+<h4 id="audioplaybackthread">AudioPlaybackThread</h4>
+<p>音频播放线程实现稍微复杂一些，</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span><span class="lnt">93
+</span><span class="lnt">94
+</span><span class="lnt">95
+</span><span class="lnt">96
+</span><span class="lnt">97
+</span><span class="lnt">98
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Constructor
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">AudioPlaybackThread</span><span class="o">::</span><span class="n">AudioPlaybackThread</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">  <span class="o">:</span> <span class="n">juce</span><span class="o">::</span><span class="n">Thread</span><span class="p">(</span><span class="s">&#34;audio-playback&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">,</span> <span class="n">player</span><span class="p">()</span>	<span class="c1">// 创建一个juce::AudioSourcePlayer，它持续地将audio source流式播放到AudioIODevice
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">,</span> <span class="n">transport</span><span class="p">()</span>	<span class="c1">// 创建一个juce::AudioTransportSource，它可以让AudioSource播放、停止、开始等
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">,</span> <span class="n">mixer</span><span class="p">()</span>		<span class="c1">// 创建一个juce::MixerAudioSource，它可以让多个AudioSource混合到一起
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">,</span> <span class="n">source</span><span class="p">(</span><span class="nb">NULL</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">,</span> <span class="n">sampleRate</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">,</span> <span class="n">numChannels</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">,</span> <span class="n">buffer_size</span><span class="p">(</span><span class="mi">12000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">,</span> <span class="n">is_playing</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">,</span> <span class="n">time_thread</span><span class="p">(</span><span class="s">&#34;audio-buffer&#34;</span><span class="p">)</span>	<span class="c1">// 创建一个juce::TimeSliceThread，它可以让多个客户端轮流执行短暂任务
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 设置audio reader
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Set the reader object
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">AudioPlaybackThread</span><span class="o">::</span><span class="n">Reader</span><span class="p">(</span><span class="n">openshot</span><span class="o">::</span><span class="n">ReaderBase</span> <span class="o">*</span><span class="n">reader</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">source</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">source</span><span class="o">-&gt;</span><span class="n">Reader</span><span class="p">(</span><span class="n">reader</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Create new audio source reader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">source</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AudioReaderSource</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">source</span><span class="o">-&gt;</span><span class="n">setLooping</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span> <span class="c1">// prevent this source from terminating when it reaches the end
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// Set local vars
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">sampleRate</span> <span class="o">=</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">sample_rate</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">numChannels</span> <span class="o">=</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">channels</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// TODO: Update transport or audio source&#39;s sample rate, incase the sample rate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// is different than the original Reader
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// Mark as &#39;playing&#39;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">Play</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// audio播放，这里使用了juce框架来实现了音频播放
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Start audio thread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">AudioPlaybackThread</span><span class="o">::</span><span class="n">run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">threadShouldExit</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">source</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">transport</span><span class="p">.</span><span class="n">isPlaying</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">is_playing</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Start new audio device (or get existing one)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="c1">// Add callback
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">AudioDeviceManagerSingleton</span><span class="o">::</span><span class="n">Instance</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">audioDeviceManager</span><span class="p">.</span><span class="n">addAudioCallback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">player</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Create TimeSliceThread for audio buffering
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">time_thread</span><span class="p">.</span><span class="n">startThread</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Connect source to transport
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">transport</span><span class="p">.</span><span class="n">setSource</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">source</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">buffer_size</span><span class="p">,</span> <span class="c1">// tells it to buffer this many samples ahead
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="o">&amp;</span><span class="n">time_thread</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sampleRate</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">numChannels</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">transport</span><span class="p">.</span><span class="n">setPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">transport</span><span class="p">.</span><span class="n">setGain</span><span class="p">(</span><span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Connect transport to mixer and player
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">mixer</span><span class="p">.</span><span class="n">addInputSource</span><span class="p">(</span><span class="o">&amp;</span><span class="n">transport</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">player</span><span class="p">.</span><span class="n">setSource</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mixer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Start the transport
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">transport</span><span class="p">.</span><span class="n">start</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// 这里会一直等待到音频播放完
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">threadShouldExit</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">transport</span><span class="p">.</span><span class="n">isPlaying</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">is_playing</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Stop audio and shutdown transport
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">Stop</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">      <span class="n">transport</span><span class="p">.</span><span class="n">stop</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Kill previous audio
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">transport</span><span class="p">.</span><span class="n">setSource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="n">player</span><span class="p">.</span><span class="n">setSource</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">AudioDeviceManagerSingleton</span><span class="o">::</span><span class="n">Instance</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">audioDeviceManager</span><span class="p">.</span><span class="n">removeAudioCallback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">player</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Remove source
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="k">delete</span> <span class="n">source</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="n">source</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Stop time slice thread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">time_thread</span><span class="p">.</span><span class="n">stopThread</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Get the currently playing frame number
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int64_t</span> <span class="n">AudioPlaybackThread</span><span class="o">::</span><span class="n">getCurrentFramePosition</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">source</span> <span class="o">?</span> <span class="n">source</span><span class="o">-&gt;</span><span class="n">getEstimatedFrame</span><span class="p">()</span> <span class="o">:</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="videoplaybackthread">VideoPlaybackThread</h4>
+<p>视频播放线程倒是比较简单</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// 构造器里主要初始化了renderer
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Constructor
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">VideoPlaybackThread</span><span class="o">::</span><span class="n">VideoPlaybackThread</span><span class="p">(</span><span class="n">RendererBase</span> <span class="o">*</span><span class="n">rb</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="o">:</span> <span class="n">Thread</span><span class="p">(</span><span class="s">&#34;video-playback&#34;</span><span class="p">),</span> <span class="n">renderer</span><span class="p">(</span><span class="n">rb</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">,</span> <span class="n">render</span><span class="p">(),</span> <span class="n">reset</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 渲染线程
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Start the thread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">VideoPlaybackThread</span><span class="o">::</span><span class="n">run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">threadShouldExit</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Make other threads wait on the render event
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">bool</span> <span class="n">need_render</span> <span class="o">=</span> <span class="n">render</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="mi">500</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">need_render</span> <span class="o">&amp;&amp;</span> <span class="n">frame</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// Debug
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">ZmqLogger</span><span class="o">::</span><span class="n">Instance</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">AppendDebugMethod</span><span class="p">(</span><span class="s">&#34;VideoPlaybackThread::run (before render)&#34;</span><span class="p">,</span> <span class="s">&#34;frame-&gt;number&#34;</span><span class="p">,</span> <span class="n">frame</span><span class="o">-&gt;</span><span class="n">number</span><span class="p">,</span> <span class="s">&#34;need_render&#34;</span><span class="p">,</span> <span class="n">need_render</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Render the frame to the screen
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">renderer</span><span class="o">-&gt;</span><span class="n">paint</span><span class="p">(</span><span class="n">frame</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//  这里实际上是通知给了VideoRenderWidget
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// Signal to other threads that the rendered event has completed
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">rendered</span><span class="p">.</span><span class="n">signal</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="videocachethread">VideoCacheThread</h4>
+<p>VideoCacheThread线程实现了视频帧的预加载。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Start the thread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">VideoCacheThread</span><span class="o">::</span><span class="n">run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// Types for storing time durations in whole and fractional milliseconds
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">using</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">using</span> <span class="n">double_ms</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">ms</span><span class="o">::</span><span class="n">period</span><span class="o">&gt;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// Calculate on-screen time for a single frame in milliseconds
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">const</span> <span class="k">auto</span> <span class="n">frame_duration</span> <span class="o">=</span> <span class="n">double_ms</span><span class="p">(</span><span class="mf">1000.0</span> <span class="o">/</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">fps</span><span class="p">.</span><span class="n">ToDouble</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">threadShouldExit</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">is_playing</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 预加载多少帧由position, current_display_frame和max_concurrent_frames计算得出
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// Cache frames before the other threads need them
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// Cache frames up to the max frames. Reset to current position
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// if cache gets too far away from display frame. Cache frames
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// even when player is paused (i.e. speed 0).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">while</span> <span class="p">(((</span><span class="n">position</span> <span class="o">-</span> <span class="n">current_display_frame</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_concurrent_frames</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">is_playing</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// Only cache up till the max_concurrent_frames amount... then sleep
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="k">try</span>
+</span></span><span class="line"><span class="cl">      <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">reader</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="n">ZmqLogger</span><span class="o">::</span><span class="n">Instance</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">AppendDebugMethod</span><span class="p">(</span><span class="s">&#34;VideoCacheThread::run (cache frame)&#34;</span><span class="p">,</span> <span class="s">&#34;position&#34;</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="s">&#34;current_display_frame&#34;</span><span class="p">,</span> <span class="n">current_display_frame</span><span class="p">,</span> <span class="s">&#34;max_concurrent_frames&#34;</span><span class="p">,</span> <span class="n">max_concurrent_frames</span><span class="p">,</span> <span class="s">&#34;needed_frames&#34;</span><span class="p">,</span> <span class="p">(</span><span class="n">position</span> <span class="o">-</span> <span class="n">current_display_frame</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">          <span class="c1">// Force the frame to be generated
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>          <span class="k">if</span> <span class="p">(</span><span class="n">reader</span><span class="o">-&gt;</span><span class="n">GetCache</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">GetSmallestFrame</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int64_t</span> <span class="n">smallest_cached_frame</span> <span class="o">=</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">GetCache</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">GetSmallestFrame</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">number</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">smallest_cached_frame</span> <span class="o">&gt;</span> <span class="n">current_display_frame</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">              <span class="c1">// Cache position has gotten too far away from current display frame.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>              <span class="c1">// Reset the position to the current display frame.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>              <span class="n">position</span> <span class="o">=</span> <span class="n">current_display_frame</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">          <span class="p">}</span>
+</span></span><span class="line"><span class="cl">          <span class="n">reader</span><span class="o">-&gt;</span><span class="n">GetFrame</span><span class="p">(</span><span class="n">position</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="k">catch</span> <span class="p">(</span><span class="k">const</span> <span class="n">OutOfBoundsFrame</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">      <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Ignore out of bounds frame exceptions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Increment frame number
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">position</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Sleep for 1 frame length
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">frame_duration</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="playerprivate线程">PlayerPrivate线程</h4>
+<p>PlayerPrivate线程实现了音视频帧同步，使用的是视频同步音频的算法。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span><span class="lnt">93
+</span><span class="lnt">94
+</span><span class="lnt">95
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Start thread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">void</span> <span class="n">PlayerPrivate</span><span class="o">::</span><span class="n">run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// bail if no reader set
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">reader</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// Start the threads
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_audio</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">audioPlayback</span><span class="o">-&gt;</span><span class="n">startThread</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_video</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">videoCache</span><span class="o">-&gt;</span><span class="n">startThread</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">videoPlayback</span><span class="o">-&gt;</span><span class="n">startThread</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">using</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// Types for storing time durations in whole and fractional milliseconds
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">using</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">using</span> <span class="n">double_ms</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">ms</span><span class="o">::</span><span class="n">period</span><span class="o">&gt;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// Calculate on-screen time for a single frame in milliseconds
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">const</span> <span class="k">auto</span> <span class="n">frame_duration</span> <span class="o">=</span> <span class="n">double_ms</span><span class="p">(</span><span class="mf">1000.0</span> <span class="o">/</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">fps</span><span class="p">.</span><span class="n">ToDouble</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">threadShouldExit</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Get the start time (to track how long a frame takes to render)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="k">auto</span> <span class="n">time1</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Get the current video frame (if it&#39;s different)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">frame</span> <span class="o">=</span> <span class="n">getFrame</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Experimental Pausing Code (if frame has not changed)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">((</span><span class="n">speed</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">video_position</span> <span class="o">==</span> <span class="n">last_video_position</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">||</span> <span class="p">(</span><span class="n">video_position</span> <span class="o">&gt;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">video_length</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">       <span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">speed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">frame_duration</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Set the video frame on the video thread and render frame
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">videoPlayback</span><span class="o">-&gt;</span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">videoPlayback</span><span class="o">-&gt;</span><span class="n">render</span><span class="p">.</span><span class="n">signal</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Keep track of the last displayed frame
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">last_video_position</span> <span class="o">=</span> <span class="n">video_position</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// How many frames ahead or behind is the video thread?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">int64_t</span> <span class="n">video_frame_diff</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_audio</span> <span class="o">&amp;&amp;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_video</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">if</span> <span class="p">(</span><span class="n">speed</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Set audio frame again (since we are not in normal speed, and not paused)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">audioPlayback</span><span class="o">-&gt;</span><span class="n">Seek</span><span class="p">(</span><span class="n">video_position</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="c1">// Only calculate this if a reader contains both an audio and video thread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">audio_position</span> <span class="o">=</span> <span class="n">audioPlayback</span><span class="o">-&gt;</span><span class="n">getCurrentFramePosition</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">      <span class="n">video_frame_diff</span> <span class="o">=</span> <span class="n">video_position</span> <span class="o">-</span> <span class="n">audio_position</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Get the end time (to track how long a frame takes to render)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="k">auto</span> <span class="n">time2</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">high_resolution_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Determine how many milliseconds it took to render the frame
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="k">auto</span> <span class="n">render_time</span> <span class="o">=</span> <span class="n">double_ms</span><span class="p">(</span><span class="n">time2</span> <span class="o">-</span> <span class="n">time1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Calculate the amount of time to sleep (by subtracting the render time)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">auto</span> <span class="n">sleep_time</span> <span class="o">=</span> <span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">ms</span><span class="o">&gt;</span><span class="p">(</span><span class="n">frame_duration</span> <span class="o">-</span> <span class="n">render_time</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Debug
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">ZmqLogger</span><span class="o">::</span><span class="n">Instance</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">AppendDebugMethod</span><span class="p">(</span><span class="s">&#34;PlayerPrivate::run (determine sleep)&#34;</span><span class="p">,</span> <span class="s">&#34;video_frame_diff&#34;</span><span class="p">,</span> <span class="n">video_frame_diff</span><span class="p">,</span> <span class="s">&#34;video_position&#34;</span><span class="p">,</span> <span class="n">video_position</span><span class="p">,</span> <span class="s">&#34;audio_position&#34;</span><span class="p">,</span> <span class="n">audio_position</span><span class="p">,</span> <span class="s">&#34;speed&#34;</span><span class="p">,</span> <span class="n">speed</span><span class="p">,</span> <span class="s">&#34;render_time(ms)&#34;</span><span class="p">,</span> <span class="n">render_time</span><span class="p">.</span><span class="n">count</span><span class="p">(),</span> <span class="s">&#34;sleep_time(ms)&#34;</span><span class="p">,</span> <span class="n">sleep_time</span><span class="p">.</span><span class="n">count</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Adjust drift (if more than a few frames off between audio and video)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">video_frame_diff</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_audio</span> <span class="o">&amp;&amp;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_video</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// Since the audio and video threads are running independently,
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="c1">// they will quickly get out of sync. To fix this, we calculate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="c1">// how far ahead or behind the video frame is, and adjust the amount
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="c1">// of time the frame is displayed on the screen (i.e. the sleep time).
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="c1">// If a frame is ahead of the audio, we sleep for longer.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="c1">// If a frame is behind the audio, we sleep less (or not at all),
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="c1">// in order for the video to catch up.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">sleep_time</span> <span class="o">+=</span> <span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">ms</span><span class="o">&gt;</span><span class="p">(</span><span class="n">video_frame_diff</span> <span class="o">*</span> <span class="n">frame_duration</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">video_frame_diff</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">10</span> <span class="o">&amp;&amp;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_audio</span> <span class="o">&amp;&amp;</span> <span class="n">reader</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">.</span><span class="n">has_video</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">// Skip frame(s) to catch up to the audio (if more than 10 frames behind)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">video_position</span> <span class="o">+=</span> <span class="n">std</span><span class="o">::</span><span class="n">fabs</span><span class="p">(</span><span class="n">video_frame_diff</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span> <span class="c1">// Seek forward 1/2 the difference
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="n">sleep_time</span> <span class="o">=</span> <span class="n">sleep_time</span><span class="p">.</span><span class="n">zero</span><span class="p">();</span> <span class="c1">// Don&#39;t sleep now... immediately go to next position
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Sleep (leaving the video frame on the screen for the correct amount of time)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">sleep_time</span> <span class="o">&gt;</span> <span class="n">sleep_time</span><span class="p">.</span><span class="n">zero</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">sleep_time</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="各线程间的协作">各线程间的协作</h4>
+<p><img src="../QtPlayerWorkingFlow.jpg" alt="QtPlayerWorkingFlow"></p>
+<p>具体流程：</p>
+<p>①：开启播放线程</p>
+<p>②：分别开启audio播放线程、video cache线程、video播放线程，注意它们的线程优先级是不同的，audio播放线程最高</p>
+<p>③：audio线程使用JUCE框架来播放音频帧</p>
+<p>④：Player线程中获取视频帧，并通知cache线程该帧的位置</p>
+<p>⑤：将该视频帧更新给video播放线程</p>
+<p>⑥：video播放线程通知renderer重绘画面</p>
+<p>⑦：根据音频帧位置，计算出下一帧视频的出现时间，然后sleep_for到该时间</p>
+<p>⑻：进入步骤④，开启下一帧处理</p>
+<p>通过上述流程的分析，我们就看到了一个拥有基本功能的播放器实现了。</p>
+<h1 id="参考资料">参考资料</h1>
+<ol>
+<li>Qt5: <a href="https://doc.qt.io/qt-5/signalsandslots.html">Signals &amp; Slots</a> 这是Qt系统中对象间通信的技术。</li>
+</ol>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2021-07-28
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/c&#43;&#43;/">C&#43;&#43;</a>
+          <a href="/tags/libopenshot/">libopenshot</a>
+          <a href="/tags/video-editing/">video-editing</a>
+          <a href="/tags/video-processing/">video-processing</a>
+          <a href="/tags/video-effects/">video-effects</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/libopenshot/outline/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">专题-从libopenshot学习视频编辑器</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/libopenshot/build/">
+            <span class="next-text nav-default">libopenshot-编译</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

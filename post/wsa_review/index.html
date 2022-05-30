@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Window Subsystem Android Review - Teoking writes something.</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="teoking" /><meta name="description" content="周末看到TG Android Dev群里有人在讨论Windows Subsystem Android（WSA），觉得有点意思。于是周末花了数个小时，把笔记本安装上Windows" /><meta name="keywords" content="Tech, Android, iOS" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.99.1 with theme even" />
+
+
+<link rel="canonical" href="https://teoking.github.io/post/wsa_review/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="Window Subsystem Android Review" />
+<meta property="og:description" content="周末看到TG Android Dev群里有人在讨论Windows Subsystem Android（WSA），觉得有点意思。于是周末花了数个小时，把笔记本安装上Windows" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://teoking.github.io/post/wsa_review/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2022-05-30T21:41:24+08:00" />
+<meta property="article:modified_time" content="2022-05-30T21:41:24+08:00" />
+
+<meta itemprop="name" content="Window Subsystem Android Review">
+<meta itemprop="description" content="周末看到TG Android Dev群里有人在讨论Windows Subsystem Android（WSA），觉得有点意思。于是周末花了数个小时，把笔记本安装上Windows"><meta itemprop="datePublished" content="2022-05-30T21:41:24+08:00" />
+<meta itemprop="dateModified" content="2022-05-30T21:41:24+08:00" />
+<meta itemprop="wordCount" content="1553">
+<meta itemprop="keywords" content="Android,WSA,Windows," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Window Subsystem Android Review"/>
+<meta name="twitter:description" content="周末看到TG Android Dev群里有人在讨论Windows Subsystem Android（WSA），觉得有点意思。于是周末花了数个小时，把笔记本安装上Windows"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">Teoking</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+
+  
+
+
+</nav>
+
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">Teoking</a>
+</div>
+
+
+
+
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">Window Subsystem Android Review</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2022-05-30 </span>
+        <div class="post-category">
+            <a href="/categories/os/"> os </a>
+            </div>
+        
+      </div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#wsa环境安装">WSA环境安装</a>
+          <ul>
+            <li><a href="#windows-11安装">Windows 11安装</a></li>
+            <li><a href="#wsa安装">WSA安装</a></li>
+          </ul>
+        </li>
+        <li><a href="#测试">测试</a></li>
+        <li><a href="#review">Review</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+    <div class="post-content">
+      <p>周末看到TG Android Dev群里有人在讨论Windows Subsystem Android（WSA），觉得有点意思。于是周末花了数个小时，把笔记本安装上Windows 11，然后又手动安装上了WSA。</p>
+<p>这篇文章试图对这项新技术做一个review。</p>
+<h2 id="wsa环境安装">WSA环境安装</h2>
+<h3 id="windows-11安装">Windows 11安装</h3>
+<p>我的笔记本是联想Y7000P。本来想着从windows 10升级上去，结果发现必须启用UEFI。但启用UEFI的话，我目前的非Secure Boot的系统就要重新刷。最终我尝试成功的路径是：UEFI安装Windows 10 &ndash;&gt; Windows 10升级Windows 11.</p>
+<h4 id="uefi安装windows-10">UEFI安装Windows 10</h4>
+<p>参考这个视频：<a href="https://www.youtube.com/watch?v=doKomFpZRB8">windows10安装，uefi模式设置</a></p>
+<p>步骤基本是一样的，只是我用的PE系统是：<a href="https://www.upe.net/download.html">优启通</a></p>
+<h4 id="windows-10升级windows-11-insider">Windows 10升级Windows 11 Insider</h4>
+<p>UEFI的Win 10安装成功后，就具备了更新到Win 11的基础条件。网上的教程都在讲通过系统更新升级到Windows 11。这个方法对部分比较新的电脑可能有效，比如我另外一台Surface Pro 7就是这样升级成功的，但这台死Y7000P却升级不成功。</p>
+<p>试了几个方法后，最后只有这个成功了：<a href="https://answers.microsoft.com/zh-hans/windows/forum/all/win10%E6%9B%B4%E6%96%B0win11%E6%97%B6%E5%87%BA/d5410b93-7ebf-440f-8361-5aaf2571cc73">建议运行Windows 11安装助手</a></p>
+<p>按照帖子中Pondsi的回复操作即可。</p>
+<h3 id="wsa安装">WSA安装</h3>
+<p>系统安装成功后，按照微软官方给的文档，实际上并不能成功安装WSA，在Microsoft Store中搜索Amazon Store是没有结果的，因为这个应用目前只有在美国区域开放。</p>
+<p>最后找到一个靠谱的手动安装文章：<a href="https://www.51sec.org/2022/03/06/install-wsa-windows-subsystem-for-android-and-android-apps-in-windows-11-w-o-amazon-appstore/">Install WSA (Windows Subsystem for Android) and Android Apps In Windows 11 W/O Amazon Appstore</a></p>
+<p>按照这个文章操作一遍，终于把WSA环境装上了。</p>
+<p>不过这个文章里有几个点需要注意：</p>
+<ul>
+<li>下载msixbundle这一步，我用chrome下载一直失败，最后换了Edge，然后要忽略安全性问题后就可以下载成功</li>
+<li>Add-AppxPackage -Path 这一步需要先安装一下Microsoft.UI.Xaml再安装MicrosoftCorporationII.WindowsSubsystemForAndroid</li>
+<li>Developer mode这一步打开后，还需要手动点一下“管理开发人员设置”，这时WSA才会启动。启动成功后才会有IP地址，用于后续通过adb安装apk。</li>
+<li>需要确保BIOS中的Intel Virtualization（硬件虚拟化）已经开启。</li>
+</ul>
+<h2 id="测试">测试</h2>
+<p>我手动安装微信和抖音。简单测试了下都可以用：</p>
+<p><img src="./img/android_apps_on_wsa.png" alt="android_apps_on_wsa"></p>
+<p>GPU渲染选择独立显卡也没有问题</p>
+<p><img src="./img/wsa_settings.png" alt="wsa_settings"></p>
+<p>资源开销</p>
+<p><img src="./img/wsa_performance.png" alt="wsa_settings"></p>
+<p>开销不算低。笔记本风扇呼呼的吹（也不排除笔记本好久没有清灰了散热能力下降）。</p>
+<p>通知栏效果：</p>
+<p><img src="./img/notification.png" alt="notification"></p>
+<p>下载&ndash;安装（多应用协作）也可以正常工作。</p>
+<p>游戏测试，王者荣耀可以运行：</p>
+<p><img src="./img/timi.png" alt="timi_game"></p>
+<h2 id="review">Review</h2>
+<p>这篇是embarcadero对微软的Scott Hanselman的采访：<a href="https://blogs.embarcadero.com/android-on-windows-11-a-developers-perspective/">Android on Windows 11: A Developer’s Perspective</a></p>
+<p>里面谈论了很多技术细节。值得看一下。</p>
+<p>我在这里记录一下我关注到的点：</p>
+<ul>
+<li>和WSL类似。我看github上已经放出了<a href="https://github.com/WSA-Community/WSA-Linux-Kernel">WSA Linux Kernel</a>，用来记录微软的提交记录。</li>
+<li>arm64的apk之所以可以在我Intel i5的笔记本上能跑起来是因为使用了interoperability layer。在Intel CPU上用的是libhoudini.so。</li>
+<li>arm64的apk在Arm64的Windows上跑的话，是native执行的</li>
+</ul>
+<p><img src="./img/hardware_req.png" alt="hardware requirements"></p>
+<p><img src="./img/libhoudini.png" alt="houdini"></p>
+<ul>
+<li>
+<p>依赖于Virtual Machine Platform（Intel），在BIOS中开启</p>
+</li>
+<li>
+<p>APK目前通过Amazon Appstore分发，目前仅开了US市场</p>
+</li>
+<li>
+<p>微软为WSA VM定义了生命周期。来应对app的各种情况：是否运行、切换动画、应用释放等等。生命周期目前看起来比较简单。</p>
+</li>
+<li>
+<p>官方给出了性能测试数据，单论性能还是可以的啊，无论从CPU/MEM，貌似现在还不支持3D？</p>
+</li>
+</ul>
+<p><img src="./img/performance_vs_phone" alt="perf"></p>
+<p><img src="./img/passmask.png" alt="passmark"></p>
+<ul>
+<li>
+<p>目前的WSA使用的是Android 11</p>
+</li>
+<li>
+<p>适配WSA的主要工作是：Android App Resizable</p>
+</li>
+<li>
+<p>位置服务可用，依赖于Windows位置设置</p>
+</li>
+<li>
+<p>通知会显示在桌面上，并且可以唤醒WSA</p>
+</li>
+</ul>
+
+    </div>
+
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">teoking</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+        2022-05-30
+        
+    </span>
+  </p>
+  
+  
+</div>
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/android/">Android</a>
+          <a href="/tags/wsa/">WSA</a>
+          <a href="/tags/windows/">Windows</a>
+          </div>
+      <nav class="post-nav">
+        
+        <a class="next" href="/post/libopenshot/effect-transition/">
+            <span class="next-text nav-default">libopenshot-Effect,KeyFrame和Transition</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:yagatong@email.com" class="iconfont icon-email" title="email"></a>
+  <a href="https://teoking.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2020 - 
+    2022<span class="heart"><i class="iconfont icon-heart"></i></span><span>teoking</span>
+  </span>
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
